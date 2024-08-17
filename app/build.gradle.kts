@@ -1,7 +1,9 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
-    id("com.google.gms.google-services") version "4.4.2"
+    id("com.google.gms.google-services")
+    id("kotlin-kapt")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -48,6 +50,9 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    buildToolsVersion = "34.0.0"
+
+
 }
 
 dependencies {
@@ -63,6 +68,7 @@ dependencies {
     implementation("androidx.compose.material3:material3:")
     implementation("androidx.compose.material3:material3-window-size-class:1.2.1")
     implementation("androidx.compose.material3:material3-adaptive-navigation-suite:1.3.0-beta05")
+    implementation(libs.firebase.auth.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -82,4 +88,24 @@ dependencies {
     implementation("androidx.compose.runtime:runtime-livedata")
     // Optional - Integration with RxJava
     implementation("androidx.compose.runtime:runtime-rxjava2")
+
+    implementation ("androidx.compose.material:material-icons-extended:1.0.0-beta01")
+
+
+    implementation("com.google.dagger:hilt-android:2.46.1")
+
+    kapt("com.google.dagger:hilt-android-compiler:2.46.1")
+
+
+
+    implementation ("androidx.hilt:hilt-navigation-compose:1.0.0")
+
+
+
+
+}
+
+kapt {
+    correctErrorTypes = true
+    
 }
