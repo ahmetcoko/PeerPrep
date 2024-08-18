@@ -5,11 +5,13 @@ import com.example.peerprep.data.repository.FirebaseUserRepository
 import javax.inject.Inject
 
 class SignUpUseCase @Inject constructor(
-    private val userRepository: FirebaseUserRepository // Repository layer injected
+    private val userRepository: FirebaseUserRepository
 ) {
-    operator fun invoke(email: String, password: String, callback: (Boolean, String) -> Unit) {
-        userRepository.signUpWithEmailPassword(email, password, callback)
+    operator fun invoke(email: String, password: String, username: String, name: String, callback: (Boolean, String) -> Unit) {
+        userRepository.signUpWithEmailPassword(email, password, username, name, callback)
     }
 }
+
+
 
 
