@@ -35,10 +35,10 @@ fun SignInScreen(signInViewModel: SignInViewModel = hiltViewModel(),onNavigateTo
     val emailState = remember { mutableStateOf("") }
     val passwordState = remember { mutableStateOf("") }
 
-    // Observing sign-in status
+
     val signInStatus = signInViewModel.signInStatus.observeAsState()
 
-    // Check for successful sign-in
+
     LaunchedEffect(signInStatus.value) {
         if (signInStatus.value == "Success") {
             onSignInSuccess()

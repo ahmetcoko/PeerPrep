@@ -57,8 +57,6 @@ fun ForgotPasswordScreen(onNavigateBack: () -> Unit,
 
         Button(
             onClick = {
-                // Assume `resetPassword` is a method in the ViewModel
-                // that triggers a password reset email
                 if(emailState.value.isNotEmpty()) {
                     viewModel.resetPassword(emailState.value) {
                         Toast.makeText(context, it, Toast.LENGTH_LONG).show()

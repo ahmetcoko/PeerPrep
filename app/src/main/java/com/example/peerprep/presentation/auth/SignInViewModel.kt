@@ -9,7 +9,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SignInViewModel @Inject constructor(private val signInUseCase: SignInUseCase) : ViewModel() {
-    // LiveData to observe sign-in status
+
     private val _signInStatus = MutableLiveData<String>()
     val signInStatus: LiveData<String> get() = _signInStatus
 

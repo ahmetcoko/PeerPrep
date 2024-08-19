@@ -12,7 +12,7 @@ import javax.inject.Singleton
 
 @Singleton
 class FirebaseUserRepository @Inject constructor(
-    private val firestore: FirebaseFirestore // Inject Firestore instance
+    private val firestore: FirebaseFirestore
 ) {
     private val auth: FirebaseAuth = Firebase.auth
 

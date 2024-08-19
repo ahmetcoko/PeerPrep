@@ -14,7 +14,7 @@ class SignUpViewModel @Inject constructor(
 ) : ViewModel() {
 
     var state = mutableStateOf(SignUpState())
-        private set  // Ensures state is only modifiable internally within the ViewModel
+        private set
 
     val passwordVisibility = mutableStateOf(false)
     val confirmPasswordVisibility = mutableStateOf(false)
@@ -26,7 +26,7 @@ class SignUpViewModel @Inject constructor(
                 if (success) {
                     Toast.makeText(context, message, Toast.LENGTH_LONG).show()
                 } else {
-                    // Handle failure, possibly show another toast or error message
+
                 }
             }
         }

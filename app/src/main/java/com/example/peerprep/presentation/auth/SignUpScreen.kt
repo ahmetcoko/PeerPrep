@@ -132,7 +132,7 @@ fun SignUpScreen(signUpViewModel: SignUpViewModel = hiltViewModel() , onNavigate
         ValidationMessage(state.doPasswordsMatch, "Passwords should match.")
         Spacer(modifier = Modifier.height(16.dp))
         Button(
-            onClick = { signUpViewModel.onSignUpClicked(context) },  // No context needed here
+            onClick = { signUpViewModel.onSignUpClicked(context) },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(turquoise)
         ) {
