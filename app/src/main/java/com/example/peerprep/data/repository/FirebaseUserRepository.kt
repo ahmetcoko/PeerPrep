@@ -58,6 +58,18 @@ class FirebaseUserRepository @Inject constructor(
             }
     }
 
+    fun signInWithEmailPassword(email: String, password: String, onComplete: (Boolean, String) -> Unit) {
+        auth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    onComplete(true, "Sign-in successful")
+                } else {
+                    onComplete(false, task.exception?.message ?: "Sign-in failed")
+                }
+            }
+    }
+
+
 }
 
 

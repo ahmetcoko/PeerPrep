@@ -9,9 +9,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.view.WindowCompat
+import com.example.peerprep.presentation.auth.SignInScreen
 import com.example.peerprep.presentation.auth.SignUpScreen
+import com.example.peerprep.presentation.feed.FeedScreen
 import com.example.peerprep.ui.theme.PeerPrepTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -19,12 +27,23 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
             PeerPrepTheme {
-                SignUpScreen()
+                var currentScreen by remember { mutableStateOf("SignIn") }
+                when (currentScreen) {
+                    "SignIn" -> SignInScreen(
+                        onNavigateToSignUp = { currentScreen = "SignUp" },
+                        onSignInSuccess = { currentScreen = "Feed" }  // Correctly passed to SignInScreen
+                    )
+                    "SignUp" -> SignUpScreen(
+                        onNavigateToSignIn = { currentScreen = "SignIn" }
+                    )
+                    "Feed" -> FeedScreen()
+                }
             }
         }
     }
 }
+
+
 

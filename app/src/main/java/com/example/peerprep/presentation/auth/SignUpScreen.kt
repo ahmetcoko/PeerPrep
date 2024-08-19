@@ -40,11 +40,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.peerprep.presentation.auth.SignInScreen
 
 
 
 @Composable
-fun SignUpScreen(signUpViewModel: SignUpViewModel = hiltViewModel()) {
+fun SignUpScreen(signUpViewModel: SignUpViewModel = hiltViewModel() , onNavigateToSignIn: () -> Unit){
     val state = signUpViewModel.state.value
     val context = LocalContext.current
 
@@ -138,7 +139,7 @@ fun SignUpScreen(signUpViewModel: SignUpViewModel = hiltViewModel()) {
             Text("Sign Up")
         }
         Spacer(modifier = Modifier.height(8.dp))
-        TextButton(onClick = { /* Navigate to Login */ }) {
+        TextButton(onClick = onNavigateToSignIn) {
             Text("You already have an account? Sign in", color = Color.Gray)
         }
     }
