@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,35 +23,27 @@ import com.example.peerprep.presentation.auth.SignInScreen
 import com.example.peerprep.presentation.auth.SignUpScreen
 import com.example.peerprep.presentation.feed.FeedScreen
 import com.example.peerprep.ui.theme.PeerPrepTheme
+import com.example.peerprep.util.NavigationManager
 import dagger.hilt.android.AndroidEntryPoint
+import com.example.peerprep.util.NavigationHost
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val navigationManager = NavigationManager()
+
         setContent {
             PeerPrepTheme {
-                // State to manage navigation
-                var currentScreen by remember { mutableStateOf("SignIn") }
-
-                when (currentScreen) {
-                    "SignIn" -> SignInScreen(
-                        onNavigateToSignUp = { currentScreen = "SignUp" },
-                        onNavigateToForgotPassword = { currentScreen = "ForgotPassword" },  // Navigation to Forgot Password
-                        onSignInSuccess = { currentScreen = "Feed" }
-                    )
-                    "SignUp" -> SignUpScreen(
-                        onNavigateToSignIn = { currentScreen = "SignIn" }
-                    )
-                    "Feed" -> FeedScreen()
-                    "ForgotPassword" ->     ForgotPasswordScreen(
-                        onNavigateBack = { currentScreen = "SignIn" }
-                    )
-                }
+                NavigationHost(navigationManager)
             }
         }
     }
 }
+
+
+
+
 
 
 
