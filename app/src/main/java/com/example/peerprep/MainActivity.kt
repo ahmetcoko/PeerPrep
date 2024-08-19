@@ -17,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.view.WindowCompat
+import com.example.peerprep.presentation.auth.ForgotPasswordScreen
 import com.example.peerprep.presentation.auth.SignInScreen
 import com.example.peerprep.presentation.auth.SignUpScreen
 import com.example.peerprep.presentation.feed.FeedScreen
@@ -29,21 +30,28 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             PeerPrepTheme {
+                // State to manage navigation
                 var currentScreen by remember { mutableStateOf("SignIn") }
+
                 when (currentScreen) {
                     "SignIn" -> SignInScreen(
                         onNavigateToSignUp = { currentScreen = "SignUp" },
-                        onSignInSuccess = { currentScreen = "Feed" }  // Correctly passed to SignInScreen
+                        onNavigateToForgotPassword = { currentScreen = "ForgotPassword" },  // Navigation to Forgot Password
+                        onSignInSuccess = { currentScreen = "Feed" }
                     )
                     "SignUp" -> SignUpScreen(
                         onNavigateToSignIn = { currentScreen = "SignIn" }
                     )
                     "Feed" -> FeedScreen()
+                    "ForgotPassword" ->     ForgotPasswordScreen(
+                        onNavigateBack = { currentScreen = "SignIn" }
+                    )
                 }
             }
         }
     }
 }
+
 
 
 

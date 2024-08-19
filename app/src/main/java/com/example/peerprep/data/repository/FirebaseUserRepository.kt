@@ -69,6 +69,18 @@ class FirebaseUserRepository @Inject constructor(
             }
     }
 
+    fun sendPasswordResetEmail(email: String, onComplete: (Boolean, String) -> Unit) {
+        auth.sendPasswordResetEmail(email)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    onComplete(true, "Email sent.")
+                } else {
+                    onComplete(false, task.exception?.message ?: "Error sending email.")
+                }
+            }
+    }
+
+
 
 }
 
