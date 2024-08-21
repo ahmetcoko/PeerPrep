@@ -3,43 +3,39 @@ package com.example.peerprep
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.core.view.WindowCompat
-import com.example.peerprep.presentation.auth.ForgotPasswordScreen
-import com.example.peerprep.presentation.auth.SignInScreen
-import com.example.peerprep.presentation.auth.SignUpScreen
-import com.example.peerprep.presentation.feed.FeedScreen
+import androidx.activity.viewModels
+import androidx.compose.runtime.livedata.observeAsState
+import com.example.peerprep.presentation.MainScreen
+import com.example.peerprep.presentation.auth.SignInViewModel
 import com.example.peerprep.ui.theme.PeerPrepTheme
-import com.example.peerprep.util.NavigationManager
+import com.example.peerprep.presentation.navigation.NavigationManager
 import dagger.hilt.android.AndroidEntryPoint
-import com.example.peerprep.util.NavigationHost
+import com.example.peerprep.presentation.navigation.NavigationHost
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject lateinit var navigationManager: NavigationManager
+    private val signInViewModel: SignInViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val navigationManager = NavigationManager()
 
         setContent {
+            val isLoggedIn = signInViewModel.isLoggedIn.observeAsState(false)
+
             PeerPrepTheme {
-                NavigationHost(navigationManager)
+                if (isLoggedIn.value) {
+                    MainScreen()
+                } else {
+                    NavigationHost(navigationManager)
+                }
             }
         }
     }
 }
+
+
 
 
 

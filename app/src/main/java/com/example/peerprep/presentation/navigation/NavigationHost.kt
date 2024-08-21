@@ -1,4 +1,4 @@
-package com.example.peerprep.util
+package com.example.peerprep.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import com.example.peerprep.presentation.auth.ForgotPasswordScreen

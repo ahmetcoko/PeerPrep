@@ -2,6 +2,7 @@ package com.example.peerprep.di
 
 import com.example.peerprep.data.repository.FirebaseUserRepository
 import com.example.peerprep.domain.usecase.SignUpUseCase
+import com.example.peerprep.presentation.navigation.NavigationManager
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
@@ -24,5 +25,9 @@ object AppModule {
     @Provides
     fun provideSignUpUseCase(repository: FirebaseUserRepository): SignUpUseCase =
         SignUpUseCase(repository)
+
+    @Provides
+    @Singleton
+    fun provideNavigationManager(): NavigationManager = NavigationManager()
 }
 
