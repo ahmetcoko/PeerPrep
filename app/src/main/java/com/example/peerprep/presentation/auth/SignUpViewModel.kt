@@ -32,7 +32,7 @@ class SignUpViewModel @Inject constructor(
         }
     }
 
-    // Simplified property updates
+
     fun onNameChanged(name: String) {
         state.value = state.value.copy(name = name)
     }

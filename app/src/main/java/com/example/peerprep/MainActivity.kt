@@ -16,26 +16,17 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @Inject lateinit var navigationManager: NavigationManager
-    private val signInViewModel: SignInViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
-            val isLoggedIn = signInViewModel.isLoggedIn.observeAsState(false)
-
             PeerPrepTheme {
-                if (isLoggedIn.value) {
-                    MainScreen()
-                } else {
-                    NavigationHost(navigationManager)
-                }
+                NavigationHost(navigationManager)
             }
         }
     }
 }
-
-
 
 
 

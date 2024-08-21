@@ -80,8 +80,15 @@ class FirebaseUserRepository @Inject constructor(
             }
     }
 
+    fun signOut(onComplete: () -> Unit) {
+        auth.signOut()
+        onComplete()
+    }
+
+    fun isLoggedIn(): Boolean {
+        return auth.currentUser != null
+    }
+
 
 
 }
-
-
