@@ -1,5 +1,7 @@
 package com.example.peerprep
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,9 +18,13 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @Inject lateinit var navigationManager: NavigationManager
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        sharedPreferences = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        checkLoginState()
 
         setContent {
             PeerPrepTheme {
@@ -26,7 +32,17 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    private fun checkLoginState() {
+        val isLoggedIn = sharedPreferences.getBoolean("is_logged_in", false)
+        if (isLoggedIn) {
+            navigationManager.navigateToFeed()
+        } else {
+            navigationManager.navigateToSignIn()
+        }
+    }
 }
+
 
 
 
