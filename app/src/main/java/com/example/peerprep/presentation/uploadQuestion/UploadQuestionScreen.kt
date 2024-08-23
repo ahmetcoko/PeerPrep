@@ -1,7 +1,10 @@
 package com.example.peerprep.presentation.uploadQuestion
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.Text
 import androidx.compose.material3.*
@@ -13,10 +16,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.peerprep.domain.model.Lesson
 import com.example.peerprep.domain.model.Subtopic
+import com.example.peerprep.ui.theme.outline
 
 @Composable
 fun UploadQuestionScreen(
@@ -27,7 +33,10 @@ fun UploadQuestionScreen(
     val selectedSubtopic by viewModel.selectedSubtopic.collectAsState()
 
     Column(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         LessonDropdown(
             lessons = lessons,
@@ -54,7 +63,12 @@ fun LessonDropdown(
     var expanded by remember { mutableStateOf(false) }
 
     Box {
-        OutlinedButton(onClick = { expanded = true }) {
+        OutlinedButton(
+            onClick = { expanded = true },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = outline // Set the inside color of the button to light gray
+            )) {
             Text(text = selectedLesson?.name ?: "Select Lesson")
         }
 
@@ -81,7 +95,12 @@ fun SubtopicDropdown(
     var expanded by remember { mutableStateOf(false) }
 
     Box {
-        OutlinedButton(onClick = { expanded = true }) {
+        OutlinedButton(
+            onClick = { expanded = true },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = outline // Set the inside color of the button to light gray
+            )) {
             Text(text = selectedSubtopic?.name ?: "Select Subtopic")
         }
 
