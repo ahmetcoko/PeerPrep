@@ -1,5 +1,6 @@
 package com.example.peerprep.presentation.uploadQuestion
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.peerprep.domain.model.Lesson
@@ -25,6 +26,9 @@ class UploadQuestionViewModel @Inject constructor(
     private val _selectedSubtopic = MutableStateFlow<Subtopic?>(null)
     val selectedSubtopic: StateFlow<Subtopic?> get() = _selectedSubtopic
 
+    private val _imagePath = MutableStateFlow<Uri?>(null)
+    val imagePath: StateFlow<Uri?> get() = _imagePath
+
     init {
         loadLessons()
     }
@@ -42,6 +46,10 @@ class UploadQuestionViewModel @Inject constructor(
 
     fun onSubtopicSelected(subtopic: Subtopic) {
         _selectedSubtopic.value = subtopic
+    }
+
+    fun setImagePath(uri: Uri?) {
+        _imagePath.value = uri
     }
 }
 

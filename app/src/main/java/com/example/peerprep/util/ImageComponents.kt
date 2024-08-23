@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
 
 
@@ -12,7 +13,7 @@ import coil.compose.rememberImagePainter
 @Composable
 fun LoadImage(imagePath: String?, contentDescription: String) {
     if (imagePath != null) {
-        val painter = rememberImagePainter(data = imagePath)
+        val painter = rememberAsyncImagePainter(model = imagePath)
         Image(
             painter = painter,
             contentDescription = contentDescription,
