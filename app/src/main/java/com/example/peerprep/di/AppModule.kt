@@ -1,6 +1,9 @@
 package com.example.peerprep.di
 
 import com.example.peerprep.data.repository.FirebaseUserRepository
+import com.example.peerprep.data.repository.LessonRepositoryImpl
+import com.example.peerprep.domain.repository.LessonRepository
+import com.example.peerprep.domain.usecase.GetLessonsUseCase
 import com.example.peerprep.domain.usecase.SignUpUseCase
 import com.example.peerprep.presentation.navigation.NavigationManager
 import com.google.firebase.auth.FirebaseAuth
@@ -31,5 +34,17 @@ object AppModule {
     @Provides
     @Singleton
     fun provideNavigationManager(): NavigationManager = NavigationManager()
+
+    @Provides
+    @Singleton
+    fun provideLessonRepository(): LessonRepository {
+        return LessonRepositoryImpl()
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetLessonsUseCase(lessonRepository: LessonRepository): GetLessonsUseCase {
+        return GetLessonsUseCase(lessonRepository)
+    }
 }
 
