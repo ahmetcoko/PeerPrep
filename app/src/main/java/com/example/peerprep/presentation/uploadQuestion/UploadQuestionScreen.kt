@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.material3.*
@@ -61,6 +62,7 @@ fun UploadQuestionScreen(
     val imagePath by viewModel.imagePath.collectAsState()
     val userComment by viewModel.userComment.collectAsState()
     val selectedChoice by viewModel.selectedChoice.collectAsState()
+    val isUploading by viewModel.isUploading.collectAsState()
 
     val activity = LocalContext.current as Activity
     var currentPhotoUri by remember { mutableStateOf<Uri?>(null) }
@@ -94,8 +96,7 @@ fun UploadQuestionScreen(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Add space at the top
-        Spacer(modifier = Modifier.height(32.dp)) // Adjust the height as needed
+        Spacer(modifier = Modifier.height(32.dp))
 
         ImageButton(imagePath = imagePath, onClick = {
             ImagePickerUtil.openGallery(galleryLauncher)
@@ -103,15 +104,13 @@ fun UploadQuestionScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-
-
         OutlinedButton(
             onClick = {
                 currentPhotoUri = ImagePickerUtil.openCamera(cameraLauncher, activity)
             },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.outlinedButtonColors(
-                containerColor = outline // Set the inside color of the button to light gray
+                containerColor = outline
             )
         ) {
             Text("Open Camera")
@@ -119,7 +118,6 @@ fun UploadQuestionScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // TextField for user to enter a comment about the question
         TextField(
             value = userComment,
             onValueChange = { viewModel.setUserComment(it) },
@@ -132,7 +130,6 @@ fun UploadQuestionScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Multiple choice buttons
         MultipleChoiceRow(
             selectedChoice = selectedChoice,
             onChoiceSelected = { viewModel.setSelectedChoice(it) }
@@ -153,8 +150,23 @@ fun UploadQuestionScreen(
                 onSubtopicSelected = { viewModel.onSubtopicSelected(it) }
             )
         }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        OutlinedButton(
+            onClick = {
+                viewModel.uploadQuestionPost()
+            },
+            enabled = !isUploading,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text("Upload Question")
+        }
     }
 }
+
 
 @Composable
 fun MultipleChoiceRow(

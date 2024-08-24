@@ -1,20 +1,30 @@
 package com.example.peerprep.presentation.uploadQuestion
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.peerprep.data.repository.FirebaseUserRepository
 import com.example.peerprep.domain.model.Lesson
+import com.example.peerprep.domain.model.Post
 import com.example.peerprep.domain.model.Subtopic
 import com.example.peerprep.domain.usecase.GetLessonsUseCase
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
 class UploadQuestionViewModel @Inject constructor(
-    private val getLessonsUseCase: GetLessonsUseCase
+    private val getLessonsUseCase: GetLessonsUseCase,
+    private val firebaseUserRepository: FirebaseUserRepository,
+    private val firestore: FirebaseFirestore,
+    private val storage: FirebaseStorage
 ) : ViewModel() {
 
     private val _lessons = MutableStateFlow<List<Lesson>>(emptyList())
@@ -30,10 +40,13 @@ class UploadQuestionViewModel @Inject constructor(
     val imagePath: StateFlow<Uri?> get() = _imagePath
 
     private val _userComment = MutableStateFlow("")
-    val userComment: StateFlow<String> = _userComment
+    val userComment: StateFlow<String> get() = _userComment
 
     private val _selectedChoice = MutableStateFlow<String?>(null)
-    val selectedChoice: StateFlow<String?> = _selectedChoice
+    val selectedChoice: StateFlow<String?> get() = _selectedChoice
+
+    private val _isUploading = MutableStateFlow(false)
+    val isUploading: StateFlow<Boolean> get() = _isUploading
 
     init {
         loadLessons()
@@ -65,5 +78,124 @@ class UploadQuestionViewModel @Inject constructor(
     fun setSelectedChoice(choice: String) {
         _selectedChoice.value = choice
     }
+
+    fun uploadQuestionPost() {
+        viewModelScope.launch {
+            _isUploading.value = true
+
+            try {
+                val user = firebaseUserRepository.getCurrentUserDetails()
+                if (user == null) {
+                    Log.d("UploadQuestion", "User is null")
+                    return@launch
+                }
+
+                val postId = firestore.collection("QuestionPosts").document().id
+                val imageUrl = uploadImageToStorage(postId)
+                if (imageUrl == null) {
+                    Log.d("UploadQuestion", "Image URL is null")
+                    return@launch
+                }
+
+                val selectedSubtopicList = selectedSubtopic.value?.let { listOf(it) } ?: emptyList()
+
+                val post = Post(
+                    comment = userComment.value,
+                    downloadUrl = imageUrl,
+                    answer = selectedChoice.value,
+                    date = Date(),
+                    userName = user.username,
+                    fullName = user.name,
+                    userEmail = user.email,
+                    lessons = Lesson(
+                        name = selectedLesson.value?.name ?: "",
+                        subtopics = selectedSubtopicList
+                    ),
+                    postId = postId
+                )
+
+                firestore.collection("QuestionPosts").document(postId)
+                    .set(post)
+                    .addOnCompleteListener {
+                        _isUploading.value = false
+                        if (it.isSuccessful) {
+                            // Handle success (e.g., show a toast, navigate away)
+                        } else {
+                            // Handle failure (e.g., show an error message)
+                        }
+                    }
+
+                // Rest of your code...
+
+            } catch (e: Exception) {
+                Log.e("UploadQuestion", "Error uploading question post", e)
+            } finally {
+                _isUploading.value = false
+            }
+        }
+    }
+/*
+    fun uploadQuestionPost() {
+        viewModelScope.launch {
+            _isUploading.value = true
+
+            val user = firebaseUserRepository.getCurrentUserDetails() ?: return@launch
+            val postId = firestore.collection("QuestionPosts").document().id
+            val imageUrl = uploadImageToStorage(postId) ?: return@launch
+
+            val selectedSubtopicList = selectedSubtopic.value?.let { listOf(it) } ?: emptyList()
+
+            val post = Post(
+                comment = userComment.value,
+                downloadUrl = imageUrl,
+                answer = selectedChoice.value,
+                date = Date(),
+                userName = user.userName,
+                fullName = user.fullName,
+                userEmail = user.email,
+                lessons = Lesson(
+                    name = selectedLesson.value?.name ?: "",
+                    subtopics = selectedSubtopicList
+                ),
+                postId = postId
+            )
+
+            firestore.collection("QuestionPosts").document(postId)
+                .set(post)
+                .addOnCompleteListener {
+                    _isUploading.value = false
+                    if (it.isSuccessful) {
+                        // Handle success (e.g., show a toast, navigate away)
+                    } else {
+                        // Handle failure (e.g., show an error message)
+                    }
+                }
+
+
+        }
+    }*/
+
+    private suspend fun uploadImageToStorage(postId: String): String? {
+        val imageUri = _imagePath.value ?: return null
+        val storageRef = storage.reference.child("QuestionImages/$postId.jpg")
+
+        return try {
+            val uploadTask = storageRef.putFile(imageUri).await()
+            if (uploadTask.task.isSuccessful) {
+                storageRef.downloadUrl.await().toString()
+            } else {
+                Log.e("UploadQuestion", "Upload task failed")
+                null
+            }
+        } catch (e: Exception) {
+            Log.e("UploadQuestion", "Error uploading image to storage", e)
+            return null
+        }
+    }
+
 }
+
+
+
+
 
