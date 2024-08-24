@@ -23,16 +23,16 @@ object ImagePickerUtil {
     }
 
     fun openCamera(activityResultLauncher: ActivityResultLauncher<Uri>, activity: Activity): Uri {
-        // Create an image file name
+
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
         val storageDir: File? = activity.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         val imageFile = File.createTempFile(
-            "JPEG_${timeStamp}_", /* prefix */
-            ".jpg", /* suffix */
-            storageDir /* directory */
+            "JPEG_${timeStamp}_",
+            ".jpg",
+            storageDir
         )
 
-        // Save a file: path for use with ACTION_VIEW intents
+
         val photoURI: Uri = FileProvider.getUriForFile(
             activity,
             "${activity.packageName}.fileprovider",

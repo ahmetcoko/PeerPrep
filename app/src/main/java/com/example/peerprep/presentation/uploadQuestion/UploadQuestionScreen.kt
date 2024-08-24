@@ -88,6 +88,9 @@ fun UploadQuestionScreen(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Add space at the top
+        Spacer(modifier = Modifier.height(32.dp))
+
         ImageButton(imagePath = imagePath, onClick = {
             ImagePickerUtil.openGallery(galleryLauncher)
         })
@@ -100,7 +103,7 @@ fun UploadQuestionScreen(
             },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.outlinedButtonColors(
-                containerColor = outline // Set the inside color of the button to light gray
+                containerColor = outline
             )
         ) {
             Text("Open Camera")
@@ -124,6 +127,7 @@ fun UploadQuestionScreen(
     }
 }
 
+
 @Composable
 fun ImageButton(imagePath: Uri?, onClick: () -> Unit) {
     Box(
@@ -140,7 +144,7 @@ fun ImageButton(imagePath: Uri?, onClick: () -> Unit) {
                 bitmap = bitmap.asImageBitmap(),
                 contentDescription = "Selected Image",
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Fit
             )
         } else {
             Image(
@@ -155,6 +159,7 @@ fun ImageButton(imagePath: Uri?, onClick: () -> Unit) {
     }
 }
 
+
 @Composable
 fun LessonDropdown(
     lessons: List<Lesson>,
@@ -168,7 +173,7 @@ fun LessonDropdown(
             onClick = { expanded = true },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.outlinedButtonColors(
-                containerColor = outline // Set the inside color of the button to light gray
+                containerColor = outline
             )) {
             Text(text = selectedLesson?.name ?: "Select Lesson")
         }
@@ -200,7 +205,7 @@ fun SubtopicDropdown(
             onClick = { expanded = true },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.outlinedButtonColors(
-                containerColor = outline // Set the inside color of the button to light gray
+                containerColor = outline
             )) {
             Text(text = selectedSubtopic?.name ?: "Select Subtopic")
         }
