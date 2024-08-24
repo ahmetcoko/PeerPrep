@@ -3,9 +3,17 @@ package com.example.peerprep.util
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Environment
 import android.provider.MediaStore
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.result.ActivityResultLauncher
+import androidx.core.content.FileProvider
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 object ImagePickerUtil {
 
@@ -14,9 +22,24 @@ object ImagePickerUtil {
         activityResultLauncher.launch(intent)
     }
 
-    fun openCamera(activityResultLauncher: ActivityResultLauncher<Intent>, activity: Activity) {
-        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        activityResultLauncher.launch(intent)
+    fun openCamera(activityResultLauncher: ActivityResultLauncher<Uri>, activity: Activity): Uri {
+        // Create an image file name
+        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+        val storageDir: File? = activity.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        val imageFile = File.createTempFile(
+            "JPEG_${timeStamp}_", /* prefix */
+            ".jpg", /* suffix */
+            storageDir /* directory */
+        )
+
+        // Save a file: path for use with ACTION_VIEW intents
+        val photoURI: Uri = FileProvider.getUriForFile(
+            activity,
+            "${activity.packageName}.fileprovider",
+            imageFile
+        )
+        activityResultLauncher.launch(photoURI)
+        return photoURI
     }
 
     fun handleImageResult(data: Intent?): Uri? {

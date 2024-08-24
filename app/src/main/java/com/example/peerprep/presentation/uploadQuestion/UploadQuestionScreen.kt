@@ -1,13 +1,14 @@
 package com.example.peerprep.presentation.uploadQuestion
 
 import android.app.Activity
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.Environment
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.Text
 import androidx.compose.material3.*
 import androidx.compose.material3.DropdownMenuItem
@@ -30,11 +30,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import java.util.Locale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.peerprep.R
@@ -42,7 +42,10 @@ import com.example.peerprep.domain.model.Lesson
 import com.example.peerprep.domain.model.Subtopic
 import com.example.peerprep.ui.theme.outline
 import com.example.peerprep.util.ImagePickerUtil
+import java.io.File
 import java.io.InputStream
+import java.text.SimpleDateFormat
+import java.util.Date
 
 @Composable
 fun UploadQuestionScreen(
@@ -54,6 +57,8 @@ fun UploadQuestionScreen(
     val imagePath by viewModel.imagePath.collectAsState()
 
     val activity = LocalContext.current as Activity
+    var currentPhotoUri by remember { mutableStateOf<Uri?>(null) }
+
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -66,11 +71,12 @@ fun UploadQuestionScreen(
     }
 
     val cameraLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val uri = ImagePickerUtil.handleImageResult(result.data)
-            viewModel.setImagePath(uri)
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) {
+            currentPhotoUri?.let { uri ->
+                viewModel.setImagePath(uri)
+            }
         } else {
             Toast.makeText(activity, "Image capture failed", Toast.LENGTH_SHORT).show()
         }
@@ -90,12 +96,13 @@ fun UploadQuestionScreen(
 
         OutlinedButton(
             onClick = {
-                ImagePickerUtil.openCamera(cameraLauncher, activity)
+                currentPhotoUri = ImagePickerUtil.openCamera(cameraLauncher, activity)
             },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.outlinedButtonColors(
                 containerColor = outline // Set the inside color of the button to light gray
-            )){
+            )
+        ) {
             Text("Open Camera")
         }
 
