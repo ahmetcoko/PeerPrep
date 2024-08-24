@@ -29,6 +29,12 @@ class UploadQuestionViewModel @Inject constructor(
     private val _imagePath = MutableStateFlow<Uri?>(null)
     val imagePath: StateFlow<Uri?> get() = _imagePath
 
+    private val _userComment = MutableStateFlow("")
+    val userComment: StateFlow<String> = _userComment
+
+    private val _selectedChoice = MutableStateFlow<String?>(null)
+    val selectedChoice: StateFlow<String?> = _selectedChoice
+
     init {
         loadLessons()
     }
@@ -50,6 +56,14 @@ class UploadQuestionViewModel @Inject constructor(
 
     fun setImagePath(uri: Uri?) {
         _imagePath.value = uri
+    }
+
+    fun setUserComment(comment: String) {
+        _userComment.value = comment
+    }
+
+    fun setSelectedChoice(choice: String) {
+        _selectedChoice.value = choice
     }
 }
 

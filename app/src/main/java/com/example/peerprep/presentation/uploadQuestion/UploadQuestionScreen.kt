@@ -13,11 +13,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.material3.*
 import androidx.compose.material3.DropdownMenuItem
@@ -30,6 +32,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -55,6 +59,8 @@ fun UploadQuestionScreen(
     val selectedLesson by viewModel.selectedLesson.collectAsState()
     val selectedSubtopic by viewModel.selectedSubtopic.collectAsState()
     val imagePath by viewModel.imagePath.collectAsState()
+    val userComment by viewModel.userComment.collectAsState()
+    val selectedChoice by viewModel.selectedChoice.collectAsState()
 
     val activity = LocalContext.current as Activity
     var currentPhotoUri by remember { mutableStateOf<Uri?>(null) }
@@ -89,13 +95,15 @@ fun UploadQuestionScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Add space at the top
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(32.dp)) // Adjust the height as needed
 
         ImageButton(imagePath = imagePath, onClick = {
             ImagePickerUtil.openGallery(galleryLauncher)
         })
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+
+
 
         OutlinedButton(
             onClick = {
@@ -103,11 +111,32 @@ fun UploadQuestionScreen(
             },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.outlinedButtonColors(
-                containerColor = outline
+                containerColor = outline // Set the inside color of the button to light gray
             )
         ) {
             Text("Open Camera")
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // TextField for user to enter a comment about the question
+        TextField(
+            value = userComment,
+            onValueChange = { viewModel.setUserComment(it) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+                .clip(RoundedCornerShape(16.dp)),
+            placeholder = { Text("Enter comment of the question") }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Multiple choice buttons
+        MultipleChoiceRow(
+            selectedChoice = selectedChoice,
+            onChoiceSelected = { viewModel.setSelectedChoice(it) }
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -126,6 +155,30 @@ fun UploadQuestionScreen(
         }
     }
 }
+
+@Composable
+fun MultipleChoiceRow(
+    selectedChoice: String?,
+    onChoiceSelected: (String) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        listOf("A", "B", "C", "D", "E").forEach { choice ->
+            OutlinedButton(
+                onClick = { onChoiceSelected(choice) },
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = if (selectedChoice == choice) outline else Color.White
+                ),
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(choice)
+            }
+        }
+    }
+}
+
 
 
 @Composable
