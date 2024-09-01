@@ -180,9 +180,15 @@ class UploadQuestionViewModel @Inject constructor(
         val storageRef = storage.reference.child("QuestionImages/$postId.jpg")
 
         return try {
+            // Start the upload task
             val uploadTask = storageRef.putFile(imageUri).await()
+
+            // Check if the task is successful
             if (uploadTask.task.isSuccessful) {
-                storageRef.downloadUrl.await().toString()
+                // Get the download URL
+                val downloadUrl = storageRef.downloadUrl.await().toString()
+                Log.d("UploadQuestion", "Image uploaded successfully: $downloadUrl")
+                downloadUrl
             } else {
                 Log.e("UploadQuestion", "Upload task failed")
                 null
@@ -192,6 +198,7 @@ class UploadQuestionViewModel @Inject constructor(
             return null
         }
     }
+
 
 }
 
