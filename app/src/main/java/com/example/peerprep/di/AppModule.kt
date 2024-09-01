@@ -1,5 +1,6 @@
 package com.example.peerprep.di
 
+import com.example.peerprep.data.repository.FirebasePostRepository
 import com.example.peerprep.data.repository.FirebaseUserRepository
 import com.example.peerprep.data.repository.LessonRepositoryImpl
 import com.example.peerprep.domain.repository.LessonRepository
@@ -49,6 +50,12 @@ object AppModule {
     @Singleton
     fun provideGetLessonsUseCase(lessonRepository: LessonRepository): GetLessonsUseCase {
         return GetLessonsUseCase(lessonRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideFirebasePostRepository(firestore: FirebaseFirestore): FirebasePostRepository {
+        return FirebasePostRepository(firestore)
     }
 }
 

@@ -100,13 +100,13 @@ class UploadQuestionViewModel @Inject constructor(
                 val selectedSubtopicList = selectedSubtopic.value?.let { listOf(it) } ?: emptyList()
 
                 val post = Post(
-                    comment = userComment.value,
-                    downloadUrl = imageUrl,
-                    answer = selectedChoice.value,
+                    comment = userComment.value ?: "",
+                    downloadUrl = imageUrl ?: "",
+                    answer = selectedChoice.value ?: "",
                     date = Date(),
-                    userName = user.username,
-                    fullName = user.name,
-                    userEmail = user.email,
+                    userName = user.username ?: "",
+                    fullName = user.name ?: "",
+                    userEmail = user.email ?: "",
                     lessons = Lesson(
                         name = selectedLesson.value?.name ?: "",
                         subtopics = selectedSubtopicList
@@ -114,18 +114,17 @@ class UploadQuestionViewModel @Inject constructor(
                     postId = postId
                 )
 
+
                 firestore.collection("QuestionPosts").document(postId)
                     .set(post)
                     .addOnCompleteListener {
                         _isUploading.value = false
                         if (it.isSuccessful) {
-                            // Handle success (e.g., show a toast, navigate away)
+                            Log.d("UploadQuestion", "Question post uploaded successfully")
                         } else {
-                            // Handle failure (e.g., show an error message)
+                            Log.e("UploadQuestion", "Error uploading question post", it.exception)
                         }
                     }
-
-                // Rest of your code...
 
             } catch (e: Exception) {
                 Log.e("UploadQuestion", "Error uploading question post", e)
@@ -134,58 +133,14 @@ class UploadQuestionViewModel @Inject constructor(
             }
         }
     }
-/*
-    fun uploadQuestionPost() {
-        viewModelScope.launch {
-            _isUploading.value = true
-
-            val user = firebaseUserRepository.getCurrentUserDetails() ?: return@launch
-            val postId = firestore.collection("QuestionPosts").document().id
-            val imageUrl = uploadImageToStorage(postId) ?: return@launch
-
-            val selectedSubtopicList = selectedSubtopic.value?.let { listOf(it) } ?: emptyList()
-
-            val post = Post(
-                comment = userComment.value,
-                downloadUrl = imageUrl,
-                answer = selectedChoice.value,
-                date = Date(),
-                userName = user.userName,
-                fullName = user.fullName,
-                userEmail = user.email,
-                lessons = Lesson(
-                    name = selectedLesson.value?.name ?: "",
-                    subtopics = selectedSubtopicList
-                ),
-                postId = postId
-            )
-
-            firestore.collection("QuestionPosts").document(postId)
-                .set(post)
-                .addOnCompleteListener {
-                    _isUploading.value = false
-                    if (it.isSuccessful) {
-                        // Handle success (e.g., show a toast, navigate away)
-                    } else {
-                        // Handle failure (e.g., show an error message)
-                    }
-                }
-
-
-        }
-    }*/
 
     private suspend fun uploadImageToStorage(postId: String): String? {
         val imageUri = _imagePath.value ?: return null
         val storageRef = storage.reference.child("QuestionImages/$postId.jpg")
 
         return try {
-            // Start the upload task
             val uploadTask = storageRef.putFile(imageUri).await()
-
-            // Check if the task is successful
             if (uploadTask.task.isSuccessful) {
-                // Get the download URL
                 val downloadUrl = storageRef.downloadUrl.await().toString()
                 Log.d("UploadQuestion", "Image uploaded successfully: $downloadUrl")
                 downloadUrl
