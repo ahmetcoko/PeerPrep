@@ -14,6 +14,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
@@ -63,6 +64,12 @@ fun SignInScreen(signInViewModel: SignInViewModel = hiltViewModel(),onNavigateTo
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp)),
             keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
+                focusedIndicatorColor = Color.Gray,
+                unfocusedIndicatorColor = Color.LightGray,
+            )
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -76,6 +83,12 @@ fun SignInScreen(signInViewModel: SignInViewModel = hiltViewModel(),onNavigateTo
                 .clip(RoundedCornerShape(16.dp)),
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
+                focusedIndicatorColor = Color.Gray,
+                unfocusedIndicatorColor = Color.LightGray,
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))

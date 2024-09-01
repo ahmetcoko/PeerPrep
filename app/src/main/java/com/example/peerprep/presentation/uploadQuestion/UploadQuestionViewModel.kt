@@ -87,21 +87,18 @@ class UploadQuestionViewModel @Inject constructor(
                 val user = firebaseUserRepository.getCurrentUserDetails()
                 if (user == null) {
                     Log.d("UploadQuestion", "User is null")
+                    _isUploading.value = false
                     return@launch
                 }
 
                 val postId = firestore.collection("QuestionPosts").document().id
                 val imageUrl = uploadImageToStorage(postId)
-                if (imageUrl == null) {
-                    Log.d("UploadQuestion", "Image URL is null")
-                    return@launch
-                }
 
                 val selectedSubtopicList = selectedSubtopic.value?.let { listOf(it) } ?: emptyList()
 
                 val post = Post(
-                    comment = userComment.value ?: "",
-                    downloadUrl = imageUrl ?: "",
+                    comment = userComment.value,
+                    downloadUrl = imageUrl,
                     answer = selectedChoice.value ?: "",
                     date = Date(),
                     userName = user.username ?: "",
@@ -114,7 +111,6 @@ class UploadQuestionViewModel @Inject constructor(
                     postId = postId
                 )
 
-
                 firestore.collection("QuestionPosts").document(postId)
                     .set(post)
                     .addOnCompleteListener {
@@ -125,17 +121,15 @@ class UploadQuestionViewModel @Inject constructor(
                             Log.e("UploadQuestion", "Error uploading question post", it.exception)
                         }
                     }
-
             } catch (e: Exception) {
-                Log.e("UploadQuestion", "Error uploading question post", e)
-            } finally {
+                Log.e("UploadQuestion", "Error in upload process", e)
                 _isUploading.value = false
             }
         }
     }
 
     private suspend fun uploadImageToStorage(postId: String): String? {
-        val imageUri = _imagePath.value ?: return null
+        val imageUri = _imagePath.value ?: return null  // Return null immediately if no image path
         val storageRef = storage.reference.child("QuestionImages/$postId.jpg")
 
         return try {
@@ -150,9 +144,10 @@ class UploadQuestionViewModel @Inject constructor(
             }
         } catch (e: Exception) {
             Log.e("UploadQuestion", "Error uploading image to storage", e)
-            return null
+            null
         }
     }
+
 
 
 }

@@ -11,8 +11,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Comment
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -27,6 +31,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.peerprep.R
 import com.example.peerprep.domain.model.Post
 import coil.compose.rememberAsyncImagePainter
+import com.example.peerprep.ui.theme.turquoise
 
 
 @Composable
@@ -68,18 +73,31 @@ fun PostItem(post: Post) {
                 fontWeight = FontWeight.Bold,
                 style = typography.bodyLarge
             )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Icon(
+                painter = painterResource(id = R.drawable.detail),
+                contentDescription = "Details Icon",
+                modifier = Modifier.size(24.dp),
+                tint = Color.Unspecified
+            )
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Image(
-            painter = rememberAsyncImagePainter(model = post.downloadUrl),
-            contentDescription = "Post Image",
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp),
-            contentScale = ContentScale.Crop
-        )
+        post.downloadUrl?.let { url ->
+            Image(
+                painter = rememberAsyncImagePainter(model = url),
+                contentDescription = "Post Image",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
+                contentScale = ContentScale.Crop
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -88,8 +106,9 @@ fun PostItem(post: Post) {
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Icon(imageVector = Icons.Default.Favorite, contentDescription = "Like", tint = Color.Red)
-            Icon(imageVector = Icons.Default.Share, contentDescription = "Share", tint = Color.Gray)
+            Icon(imageVector = Icons.Default.FavoriteBorder, contentDescription = "Like", tint = Color.Black)
+            Icon(imageVector = Icons.Default.Comment, contentDescription = "Comment", tint = Color.Black)
+            Icon(imageVector = Icons.Default.Share, contentDescription = "Share", tint = Color.Black)
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -102,5 +121,8 @@ fun PostItem(post: Post) {
                 .fillMaxWidth()
                 .padding(4.dp)
         )
+
+        Spacer(modifier = Modifier.height(8.dp))
+        HorizontalDivider(thickness = 2.dp, color = turquoise)
     }
 }

@@ -108,7 +108,9 @@ fun UploadQuestionScreen(
             onClick = {
                 currentPhotoUri = ImagePickerUtil.openCamera(cameraLauncher, activity)
             },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             colors = ButtonDefaults.outlinedButtonColors(
                 containerColor = outline
             )
@@ -125,7 +127,13 @@ fun UploadQuestionScreen(
                 .fillMaxWidth()
                 .padding(8.dp)
                 .clip(RoundedCornerShape(16.dp)),
-            placeholder = { Text("Enter comment of the question") }
+            placeholder = { Text("Enter comment of the question") },
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
+                focusedIndicatorColor = Color.Gray,
+                unfocusedIndicatorColor = Color.LightGray,
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -160,7 +168,9 @@ fun UploadQuestionScreen(
             enabled = !isUploading,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(16.dp),colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = outline
+            )
         ) {
             Text("Upload Question")
         }
@@ -183,7 +193,9 @@ fun MultipleChoiceRow(
                 colors = ButtonDefaults.outlinedButtonColors(
                     containerColor = if (selectedChoice == choice) outline else Color.White
                 ),
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(8.dp)
             ) {
                 Text(choice)
             }
@@ -236,7 +248,9 @@ fun LessonDropdown(
     Box {
         OutlinedButton(
             onClick = { expanded = true },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             colors = ButtonDefaults.outlinedButtonColors(
                 containerColor = outline
             )) {
@@ -268,7 +282,9 @@ fun SubtopicDropdown(
     Box {
         OutlinedButton(
             onClick = { expanded = true },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             colors = ButtonDefaults.outlinedButtonColors(
                 containerColor = outline
             )) {

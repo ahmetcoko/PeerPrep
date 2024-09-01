@@ -4,7 +4,7 @@ import java.util.Date
 
 data class Post(
     val comment: String = "",
-    val downloadUrl: String = "",
+    val downloadUrl: String? = null,
     val answer: String = "",
     val date: Date = Date(),
     val userName: String = "",

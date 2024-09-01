@@ -38,6 +38,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.peerprep.presentation.auth.SignInScreen
@@ -64,8 +65,14 @@ fun SignUpScreen(signUpViewModel: SignUpViewModel = hiltViewModel() , onNavigate
             label = { Text("Name") },
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp)), // Add this line to make corners rounded
+                .clip(RoundedCornerShape(16.dp)),
             keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
+                focusedIndicatorColor = Color.Gray,
+                unfocusedIndicatorColor = Color.LightGray,
+            )
         )
         ValidationMessage(state.isNameValid, "Full Name must be within 15 characters.")
         Spacer(modifier = Modifier.height(8.dp))
@@ -77,6 +84,12 @@ fun SignUpScreen(signUpViewModel: SignUpViewModel = hiltViewModel() , onNavigate
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp)),
             keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
+                focusedIndicatorColor = Color.Gray,
+                unfocusedIndicatorColor = Color.LightGray,
+            )
         )
         ValidationMessage(state.isUsernameValid, "Username must be within 10 characters.")
         Spacer(modifier = Modifier.height(8.dp))
@@ -88,6 +101,12 @@ fun SignUpScreen(signUpViewModel: SignUpViewModel = hiltViewModel() , onNavigate
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp)),
             keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
+                focusedIndicatorColor = Color.Gray,
+                unfocusedIndicatorColor = Color.LightGray,
+            )
         )
         ValidationMessage(state.isEmailValid, "Email must be formatted correctly and contain @.")
         Spacer(modifier = Modifier.height(8.dp))
@@ -107,7 +126,13 @@ fun SignUpScreen(signUpViewModel: SignUpViewModel = hiltViewModel() , onNavigate
                         contentDescription = if (signUpViewModel.passwordVisibility.value) "Hide password" else "Show password"
                     )
                 }
-            }
+            },
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
+                focusedIndicatorColor = Color.Gray,
+                unfocusedIndicatorColor = Color.LightGray,
+            )
         )
         ValidationMessage(state.isPasswordValid, "Password must be at least 6 characters.")
         Spacer(modifier = Modifier.height(8.dp))
@@ -127,7 +152,13 @@ fun SignUpScreen(signUpViewModel: SignUpViewModel = hiltViewModel() , onNavigate
                         contentDescription = if (signUpViewModel.confirmPasswordVisibility.value) "Hide password" else "Show password"
                     )
                 }
-            }
+            },
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
+                focusedIndicatorColor = Color.Gray,
+                unfocusedIndicatorColor = Color.LightGray,
+            )
         )
         ValidationMessage(state.doPasswordsMatch, "Passwords should match.")
         Spacer(modifier = Modifier.height(16.dp))
@@ -154,7 +185,7 @@ fun ValidationMessage(isValid: Boolean, message: String) {
     ) {
         Icon(
             imageVector = if (isValid) Icons.Default.Check else Icons.Default.Close,
-            contentDescription = null, // Decorative icon
+            contentDescription = null,
             tint = if (isValid) Color.Green else Color.Red
         )
         Text(
