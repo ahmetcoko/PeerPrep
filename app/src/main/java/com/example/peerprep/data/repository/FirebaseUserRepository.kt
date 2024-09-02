@@ -32,9 +32,9 @@ class FirebaseUserRepository @Inject constructor(
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val userData = hashMapOf(
-                        "email" to "ahmetcoko@gmail.com",
-                        "name" to "ahmet2",
-                        "username" to "Ahmetcoko"
+                        "email" to email,
+                        "name" to name,
+                        "username" to username
                     )
 
                     val uid = auth.currentUser?.uid ?: return@addOnCompleteListener
