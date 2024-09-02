@@ -1,9 +1,11 @@
 package com.example.peerprep.presentation.feed
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,8 +19,12 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,11 +38,14 @@ import com.example.peerprep.R
 import com.example.peerprep.domain.model.Post
 import coil.compose.rememberAsyncImagePainter
 import com.example.peerprep.ui.theme.turquoise
+import com.example.peerprep.util.ImageViewerDialog
 
 
 @Composable
 fun FeedScreen(viewModel: FeedViewModel = hiltViewModel()) {
     val posts by viewModel.posts.collectAsState()
+    val currentUserId by viewModel.currentUserId.collectAsState()
+    val currentUserName by viewModel.currentUserName.collectAsState()
 
     LazyColumn(
         modifier = Modifier
@@ -44,14 +53,27 @@ fun FeedScreen(viewModel: FeedViewModel = hiltViewModel()) {
             .padding(8.dp)
     ) {
         items(posts) { post: Post ->
-            PostItem(post)
+            if (currentUserId != null && currentUserName != null) {
+                PostItem(
+                    post = post,
+                    viewModel = viewModel,
+                    currentUserId = currentUserId!!,
+                    currentUserName = currentUserName!!
+                )
+            }
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
 
+
+
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun PostItem(post: Post) {
+fun PostItem(post: Post, viewModel: FeedViewModel, currentUserId: String, currentUserName: String) {
+    var isImageDialogVisible by remember { mutableStateOf(false) }
+    val isLiked = post.likes.any { it.userId == currentUserId }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -92,11 +114,19 @@ fun PostItem(post: Post) {
                 contentDescription = "Post Image",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp),
+                    .height(200.dp)
+                    .combinedClickable(
+                        onClick = {},
+                        onLongClick = { isImageDialogVisible = true }
+                    ),
                 contentScale = ContentScale.Crop
             )
 
             Spacer(modifier = Modifier.height(8.dp))
+
+            if (isImageDialogVisible) {
+                ImageViewerDialog(imageUrl = url) { isImageDialogVisible = false }
+            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -106,8 +136,22 @@ fun PostItem(post: Post) {
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Icon(imageVector = Icons.Default.FavoriteBorder, contentDescription = "Like", tint = Color.Black)
+            IconButton(onClick = {
+                viewModel.toggleLike(post, currentUserId, currentUserName)
+            }) {
+                Icon(
+                    imageVector = if (isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = "Like",
+                    tint = if (isLiked) Color.Red else Color.Black
+                )
+            }
+
+            Text(text = "${post.likes.size}", style = typography.bodyLarge)
+            Spacer(modifier = Modifier.weight(1f))
+
             Icon(imageVector = Icons.Default.Comment, contentDescription = "Comment", tint = Color.Black)
+
+            Spacer(modifier = Modifier.weight(1f))
             Icon(imageVector = Icons.Default.Share, contentDescription = "Share", tint = Color.Black)
         }
 
@@ -126,3 +170,5 @@ fun PostItem(post: Post) {
         HorizontalDivider(thickness = 2.dp, color = turquoise)
     }
 }
+
+

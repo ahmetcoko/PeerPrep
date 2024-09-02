@@ -3,7 +3,9 @@ package com.example.peerprep.data.repository
 
 
 
+import androidx.annotation.OptIn
 import androidx.media3.common.util.Log
+import androidx.media3.common.util.UnstableApi
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
@@ -18,6 +20,7 @@ class FirebaseUserRepository @Inject constructor(
 ) {
     private val auth: FirebaseAuth = Firebase.auth
 
+    @OptIn(UnstableApi::class)
     fun signUpWithEmailPassword(
         email: String,
         password: String,
@@ -55,8 +58,8 @@ class FirebaseUserRepository @Inject constructor(
         onComplete: (Boolean, String) -> Unit
     ) {
         firestore.collection("Users")
-            .document(uid) // Use the UID as the document ID
-            .set(userData) // Use .set() instead of .add()
+            .document(uid)
+            .set(userData)
             .addOnSuccessListener {
                 onComplete(true, "User data saved successfully with UID: $uid")
             }
@@ -97,6 +100,7 @@ class FirebaseUserRepository @Inject constructor(
         return auth.currentUser != null
     }
 
+    @OptIn(UnstableApi::class)
     suspend fun getCurrentUserDetails(): UserDetails? {
         val user = auth.currentUser ?: return null
 
@@ -111,6 +115,27 @@ class FirebaseUserRepository @Inject constructor(
         } catch (e: Exception) {
             Log.e("FirebaseUserRepository", "Error fetching user details", e)
             return null
+        }
+    }
+
+    fun getCurrentUserId(): String? {
+        return auth.currentUser?.uid
+    }
+
+    @OptIn(UnstableApi::class)
+    suspend fun getCurrentUserName(): String? {
+        val userId = getCurrentUserId() ?: return null
+        return try {
+            val userDocument = firestore.collection("Users").document(userId).get().await()
+            if (userDocument.exists()) {
+                userDocument.getString("username")
+            } else {
+                Log.e("FirebaseUserRepository", "User document with UID $userId does not exist.")
+                null
+            }
+        } catch (e: Exception) {
+            Log.e("FirebaseUserRepository", "Error fetching user name", e)
+            null
         }
     }
 
