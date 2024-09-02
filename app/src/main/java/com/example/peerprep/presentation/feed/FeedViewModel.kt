@@ -6,11 +6,15 @@ import androidx.lifecycle.viewModelScope
 import com.example.peerprep.domain.model.Post
 import com.example.peerprep.data.repository.FirebasePostRepository
 import com.example.peerprep.data.repository.FirebaseUserRepository
+import com.example.peerprep.domain.model.Comment
 import com.example.peerprep.domain.model.Like
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -72,4 +76,24 @@ class FeedViewModel @Inject constructor(
             loadPosts()
         }
     }
+
+    fun getCommentsForPost(postId: String): StateFlow<List<Comment>> {
+        val post = _posts.value.find { it.postId == postId }
+        return MutableStateFlow(post?.comments ?: emptyList())
+    }
+
+
+    fun addCommentToPost(postId: String, comment: Comment) {
+        viewModelScope.launch {
+            postRepository.addCommentToPost(postId, comment)
+            _posts.value = _posts.value.map { post ->
+                if (post.postId == postId) {
+                    post.copy(comments = post.comments + comment)
+                } else {
+                    post
+                }
+            }
+        }
+    }
+
 }

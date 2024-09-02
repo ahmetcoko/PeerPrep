@@ -12,7 +12,8 @@ data class Post(
     val userEmail: String = "",
     val lessons: Lesson = Lesson(),
     val postId: String = "",
-    val likes: List<Like> = emptyList()
+    val likes: List<Like> = emptyList(),
+    val comments: List<Comment> = emptyList()
 ) {
-    constructor() : this("", "", "", Date(), "", "", "", Lesson(), "" , emptyList<Like>())
+    constructor() : this("", "", "", Date(), "", "", "", Lesson(), "" , emptyList<Like>(), emptyList<Comment>())
 }

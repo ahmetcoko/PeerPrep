@@ -12,3 +12,4 @@ val Pink40 = Color(0xFF7D5260)
 val turquoise = Color(0xFF2DE0BC)
 val outline = Color(0xFF38E7EC)
 val cyan = Color.Cyan
+val commentBackground = Color(0xFFE4F5F7)

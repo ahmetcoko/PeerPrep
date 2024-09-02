@@ -1,10 +1,13 @@
 package com.example.peerprep.data.repository
 
+import com.example.peerprep.domain.model.Comment
 import com.example.peerprep.domain.model.Like
 import com.example.peerprep.domain.model.Post
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -31,4 +34,10 @@ class FirebasePostRepository @Inject constructor(
         val postRef = firestore.collection("QuestionPosts").document(postId)
         postRef.update("likes", FieldValue.arrayRemove(like)).await()
     }
+
+    suspend fun addCommentToPost(postId: String, comment: Comment) {
+        val postRef = firestore.collection("QuestionPosts").document(postId)
+        postRef.update("comments", FieldValue.arrayUnion(comment)).await()
+    }
+
 }
