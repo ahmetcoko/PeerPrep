@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +40,8 @@ import com.example.peerprep.domain.model.Post
 import coil.compose.rememberAsyncImagePainter
 import com.example.peerprep.ui.theme.turquoise
 import com.example.peerprep.util.ImageViewerDialog
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
 
 @Composable
@@ -46,25 +49,38 @@ fun FeedScreen(viewModel: FeedViewModel = hiltViewModel()) {
     val posts by viewModel.posts.collectAsState()
     val currentUserId by viewModel.currentUserId.collectAsState()
     val currentUserName by viewModel.currentUserName.collectAsState()
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp)
+    LaunchedEffect(Unit) {
+        viewModel.loadPosts()
+    }
+
+    SwipeRefresh(
+        state = rememberSwipeRefreshState(isRefreshing),
+        onRefresh = {
+            viewModel.loadPosts()
+        }
     ) {
-        items(posts) { post: Post ->
-            if (currentUserId != null && currentUserName != null) {
-                PostItem(
-                    post = post,
-                    viewModel = viewModel,
-                    currentUserId = currentUserId!!,
-                    currentUserName = currentUserName!!
-                )
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp)
+        ) {
+            items(posts) { post: Post ->
+                if (currentUserId != null && currentUserName != null) {
+                    PostItem(
+                        post = post,
+                        viewModel = viewModel,
+                        currentUserId = currentUserId!!,
+                        currentUserName = currentUserName!!
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
             }
-            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
+
 
 
 

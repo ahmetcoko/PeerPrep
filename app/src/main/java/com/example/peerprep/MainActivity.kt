@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.navigation.compose.rememberNavController
 import com.example.peerprep.presentation.MainScreen
 import com.example.peerprep.presentation.auth.SignInViewModel
 import com.example.peerprep.ui.theme.PeerPrepTheme
@@ -28,6 +29,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             PeerPrepTheme {
+                val navController = rememberNavController()
                 NavigationHost(navigationManager)
             }
         }

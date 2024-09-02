@@ -108,7 +108,7 @@ dependencies {
 
     implementation("io.coil-kt:coil-compose:2.7.0")
 
-
+    implementation ("com.google.accompanist:accompanist-swiperefresh:0.24.13-rc")
 
 
 

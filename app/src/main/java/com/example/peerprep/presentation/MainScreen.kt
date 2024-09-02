@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.navigation.NavController
 import com.example.peerprep.presentation.auth.SignInScreen
 import com.example.peerprep.presentation.navigation.NavigationManager
 import com.example.peerprep.presentation.navigation.Screen
@@ -24,7 +25,7 @@ import com.example.peerprep.presentation.uploadQuestion.UploadQuestionScreen
 @Composable
 fun MainScreen(
     isLoggedIn: Boolean,
-    navigationManager: NavigationManager
+    navigationManager: NavigationManager,
 ) {
     var selectedTab by remember { mutableStateOf(Screen.Feed) }
 
@@ -39,7 +40,11 @@ fun MainScreen(
             if (isLoggedIn) {
                 when (selectedTab) {
                     Screen.Feed -> FeedScreen()
-                    Screen.Upload -> UploadQuestionScreen()
+                    Screen.Upload -> UploadQuestionScreen(
+                        onNavigateToFeed = {
+                            selectedTab = Screen.Feed
+                        }
+                    )
                     Screen.Archive -> ArchiveScreen()
                     Screen.Profile -> ProfileScreen()
                 }
@@ -53,6 +58,7 @@ fun MainScreen(
         }
     }
 }
+
 
 
 

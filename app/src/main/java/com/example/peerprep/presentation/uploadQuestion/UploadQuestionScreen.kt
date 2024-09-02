@@ -42,6 +42,7 @@ import androidx.compose.ui.res.painterResource
 import java.util.Locale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.example.peerprep.R
 import com.example.peerprep.domain.model.Lesson
 import com.example.peerprep.domain.model.Subtopic
@@ -54,7 +55,8 @@ import java.util.Date
 
 @Composable
 fun UploadQuestionScreen(
-    viewModel: UploadQuestionViewModel = hiltViewModel()
+    viewModel: UploadQuestionViewModel = hiltViewModel(),
+    onNavigateToFeed: () -> Unit
 ) {
     val lessons by viewModel.lessons.collectAsState()
     val selectedLesson by viewModel.selectedLesson.collectAsState()
@@ -163,7 +165,7 @@ fun UploadQuestionScreen(
 
         OutlinedButton(
             onClick = {
-                viewModel.uploadQuestionPost()
+                viewModel.uploadQuestionPost(onSuccess = { onNavigateToFeed() })
             },
             enabled = !isUploading,
             modifier = Modifier

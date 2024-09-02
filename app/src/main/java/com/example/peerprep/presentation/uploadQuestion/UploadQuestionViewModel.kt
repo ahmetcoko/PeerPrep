@@ -4,6 +4,7 @@ import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import com.example.peerprep.data.repository.FirebaseUserRepository
 import com.example.peerprep.domain.model.Lesson
 import com.example.peerprep.domain.model.Post
@@ -79,7 +80,7 @@ class UploadQuestionViewModel @Inject constructor(
         _selectedChoice.value = choice
     }
 
-    fun uploadQuestionPost() {
+    fun uploadQuestionPost(onSuccess: () -> Unit) {
         viewModelScope.launch {
             _isUploading.value = true
 
@@ -117,6 +118,7 @@ class UploadQuestionViewModel @Inject constructor(
                         _isUploading.value = false
                         if (it.isSuccessful) {
                             Log.d("UploadQuestion", "Question post uploaded successfully")
+                            onSuccess()
                         } else {
                             Log.e("UploadQuestion", "Error uploading question post", it.exception)
                         }

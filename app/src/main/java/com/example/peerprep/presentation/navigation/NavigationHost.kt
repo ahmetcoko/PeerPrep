@@ -3,6 +3,7 @@ package com.example.peerprep.presentation.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import com.example.peerprep.presentation.MainScreen
 import com.example.peerprep.presentation.auth.ForgotPasswordScreen
 import com.example.peerprep.presentation.auth.SignInScreen
@@ -11,7 +12,7 @@ import com.example.peerprep.presentation.feed.FeedScreen
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun NavigationHost(navigationManager: NavigationManager) {
+fun NavigationHost(navigationManager: NavigationManager ) {
     val screen = navigationManager.currentScreen
 
     when (screen) {
@@ -23,7 +24,7 @@ fun NavigationHost(navigationManager: NavigationManager) {
         "SignUp" -> SignUpScreen(onNavigateToSignIn = { navigationManager.navigateToSignIn() })
         "Feed" -> MainScreen(
             isLoggedIn = FirebaseAuth.getInstance().currentUser != null,
-            navigationManager = navigationManager
+            navigationManager = navigationManager,
         )
         "ForgotPassword" -> ForgotPasswordScreen(
             onNavigateBack = { navigationManager.navigateToSignIn() }

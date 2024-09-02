@@ -29,6 +29,9 @@ class FeedViewModel @Inject constructor(
     private val _currentUserName = MutableStateFlow<String?>(null)
     val currentUserName: StateFlow<String?> get() = _currentUserName
 
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> get() = _isRefreshing
+
     init {
         loadPosts()
         loadCurrentUserDetails()
@@ -42,10 +45,11 @@ class FeedViewModel @Inject constructor(
         return userRepository.getCurrentUserName()
     }
 
-    private fun loadPosts() {
+    fun loadPosts() {
         viewModelScope.launch {
             postRepository.getPosts().collect { posts ->
-                _posts.value = posts
+                val sortedPosts = posts.sortedByDescending { it.date }
+                _posts.value = sortedPosts
             }
         }
     }
