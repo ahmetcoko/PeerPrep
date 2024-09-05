@@ -296,8 +296,10 @@ fun PostItem(
 
             Spacer(modifier = Modifier.weight(1f))
             IconButton(onClick = {
-                post.downloadUrl?.let { imageUrl ->
-                    viewModel.shareImage(activity, imageUrl, "Shared Image", useCache = true)
+                if (post.downloadUrl.isNullOrEmpty()) {
+                    Toast.makeText(activity, "No image available for sharing", Toast.LENGTH_SHORT).show()
+                } else {
+                    viewModel.shareImage(activity, post.downloadUrl!!, "Shared Image", useCache = true)
                 }
             }) {
                 Icon(imageVector = Icons.Default.Share, contentDescription = "Share", tint = Color.Black)
