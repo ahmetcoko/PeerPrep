@@ -2,6 +2,7 @@ package com.example.peerprep.presentation.feed
 
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
@@ -16,6 +17,7 @@ import com.example.peerprep.domain.model.Comment
 import com.example.peerprep.domain.model.Lesson
 import com.example.peerprep.domain.model.Like
 import com.example.peerprep.util.ImagePickerUtil
+import com.example.peerprep.util.ShareUtil
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -55,6 +57,12 @@ class FeedViewModel @Inject constructor(
         if (_imagePath.value != uri) {
             _imagePath.value = null
             _imagePath.value = uri
+        }
+    }
+
+    fun shareImage(context: Context, imageUrl: String, fileName: String, useCache: Boolean) {
+        viewModelScope.launch {
+            ShareUtil.shareImage(context, imageUrl, fileName, useCache)
         }
     }
 

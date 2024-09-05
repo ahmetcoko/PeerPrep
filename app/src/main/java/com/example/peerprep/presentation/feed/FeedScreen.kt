@@ -63,6 +63,7 @@ import com.example.peerprep.ui.theme.commentBackground
 import com.example.peerprep.ui.theme.turquoise
 import com.example.peerprep.util.ImagePickerUtil
 import com.example.peerprep.util.ImageViewerDialog
+import com.example.peerprep.util.ShareUtil
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
@@ -294,7 +295,13 @@ fun PostItem(
             }
 
             Spacer(modifier = Modifier.weight(1f))
-            Icon(imageVector = Icons.Default.Share, contentDescription = "Share", tint = Color.Black)
+            IconButton(onClick = {
+                post.downloadUrl?.let { imageUrl ->
+                    viewModel.shareImage(activity, imageUrl, "Shared Image", useCache = true)
+                }
+            }) {
+                Icon(imageVector = Icons.Default.Share, contentDescription = "Share", tint = Color.Black)
+            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
