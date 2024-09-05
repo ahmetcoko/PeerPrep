@@ -1,6 +1,7 @@
 package com.example.peerprep.presentation.feed
 
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
@@ -52,15 +53,6 @@ class FeedViewModel @Inject constructor(
     fun setImagePath(uri: Uri?) {
         _imagePath.value = uri
     }
-
-    fun showImagePickerDialog(
-        galleryLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>,
-        cameraLauncher: ManagedActivityResultLauncher<Uri, Boolean>
-    ) {
-        //add camera intent here
-        ImagePickerUtil.openGallery(galleryLauncher)
-    }
-
 
     fun getCurrentUserId(): String? {
         return userRepository.getCurrentUserId()
@@ -142,4 +134,3 @@ class FeedViewModel @Inject constructor(
         }
     }
 }
-

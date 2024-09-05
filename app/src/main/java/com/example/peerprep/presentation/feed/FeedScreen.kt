@@ -25,9 +25,11 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Camera
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Comment
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.HorizontalDivider
@@ -69,8 +71,7 @@ fun FeedScreen(viewModel: FeedViewModel = hiltViewModel()) {
     val isRefreshing by viewModel.isRefreshing.collectAsState()
     val currentPhotoUri by viewModel.imagePath.collectAsState()
 
-    val context = LocalContext.current
-
+    val context = LocalContext.current as Activity
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -120,7 +121,8 @@ fun FeedScreen(viewModel: FeedViewModel = hiltViewModel()) {
                         currentUserName = currentUserName!!,
                         galleryLauncher = galleryLauncher,
                         cameraLauncher = cameraLauncher,
-                        currentPhotoUri = currentPhotoUri
+                        currentPhotoUri = currentPhotoUri,
+                        activity = context
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
@@ -128,6 +130,7 @@ fun FeedScreen(viewModel: FeedViewModel = hiltViewModel()) {
         }
     }
 }
+
 
 
 
@@ -142,7 +145,8 @@ fun PostItem(
     currentUserName: String,
     galleryLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>,
     cameraLauncher: ManagedActivityResultLauncher<Uri, Boolean>,
-    currentPhotoUri: Uri?
+    currentPhotoUri: Uri?,
+    activity: Activity
 ) {
     var isImageDialogVisible by remember { mutableStateOf(false) }
     var imageUrlForDialog by remember { mutableStateOf<String?>(null) }
@@ -248,6 +252,15 @@ fun PostItem(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        BasicTextField(
+            value = post.comment,
+            onValueChange = {},
+            readOnly = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(4.dp)
+        )
+
         if (isCommentsVisible) {
             Column(modifier = Modifier.clip(RoundedCornerShape(16.dp)).background(commentBackground)) {
                 comments.forEach { comment ->
@@ -288,7 +301,6 @@ fun PostItem(
                     }
                 }
 
-                // Comment input field
                 CommentInputField(
                     onCommentSubmitted = { commentText, photoUri ->
                         viewModel.addCommentToPost(post.postId, commentText, photoUri)
@@ -296,7 +308,8 @@ fun PostItem(
                     galleryLauncher = galleryLauncher,
                     cameraLauncher = cameraLauncher,
                     currentPhotoUri = currentPhotoUri,
-                    viewModel = viewModel
+                    viewModel = viewModel,
+                    activity = activity
                 )
             }
         }
@@ -324,7 +337,8 @@ fun CommentInputField(
     galleryLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>,
     cameraLauncher: ManagedActivityResultLauncher<Uri, Boolean>,
     currentPhotoUri: Uri?,
-    viewModel: FeedViewModel
+    viewModel: FeedViewModel,
+    activity: Activity
 ) {
     var commentText by remember { mutableStateOf("") }
 
@@ -348,19 +362,28 @@ fun CommentInputField(
             )
         )
 
+
         IconButton(
             onClick = {
-
-                viewModel.showImagePickerDialog(galleryLauncher, cameraLauncher)
+                ImagePickerUtil.openGallery(galleryLauncher)
             }
         ) {
-            Icon(imageVector = Icons.Default.Camera, contentDescription = "Attach Photo")
+            Icon(imageVector = Icons.Default.PhotoLibrary, contentDescription = "Pick from Gallery")
+        }
+
+
+        IconButton(
+            onClick = {
+                val uri = ImagePickerUtil.openCamera(cameraLauncher, activity)
+                viewModel.setImagePath(uri)
+            }
+        ) {
+            Icon(imageVector = Icons.Default.CameraAlt, contentDescription = "Capture Photo")
         }
 
         IconButton(
             onClick = {
                 if (commentText.isNotEmpty()) {
-
                     onCommentSubmitted(commentText, currentPhotoUri)
                     commentText = ""
                 }
