@@ -16,20 +16,6 @@ import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
 
 
-
-@Composable
-fun LoadImage(imagePath: String?, contentDescription: String) {
-    if (imagePath != null) {
-        val painter = rememberAsyncImagePainter(model = imagePath)
-        Image(
-            painter = painter,
-            contentDescription = contentDescription,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
-    }
-}
-
 @Composable
 fun ImageViewerDialog(imageUrl: String, onDismiss: () -> Unit) {
     Dialog(onDismissRequest = onDismiss) {

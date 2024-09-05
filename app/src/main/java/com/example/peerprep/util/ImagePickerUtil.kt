@@ -31,8 +31,6 @@ object ImagePickerUtil {
             ".jpg",
             storageDir
         )
-
-
         val photoURI: Uri = FileProvider.getUriForFile(
             activity,
             "${activity.packageName}.fileprovider",
