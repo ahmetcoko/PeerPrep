@@ -13,6 +13,7 @@ import com.example.peerprep.domain.model.Post
 import com.example.peerprep.data.repository.FirebasePostRepository
 import com.example.peerprep.data.repository.FirebaseUserRepository
 import com.example.peerprep.domain.model.Comment
+import com.example.peerprep.domain.model.Lesson
 import com.example.peerprep.domain.model.Like
 import com.example.peerprep.util.ImagePickerUtil
 import com.google.firebase.storage.FirebaseStorage
@@ -62,9 +63,6 @@ class FeedViewModel @Inject constructor(
         return userRepository.getCurrentUserId()
     }
 
-    suspend fun getCurrentUserName(): String? {
-        return userRepository.getCurrentUserName()
-    }
 
     fun loadPosts() {
         viewModelScope.launch {

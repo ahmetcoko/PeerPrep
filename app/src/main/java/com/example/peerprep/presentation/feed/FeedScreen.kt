@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Comment
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Share
@@ -130,7 +131,6 @@ fun FeedScreen(viewModel: FeedViewModel = hiltViewModel()) {
                         currentPhotoUri = currentPhotoUri,
                         activity = context,
                         onOpenCamera = {
-                            // Prepare photoUri before opening camera
                             photoUri = ImagePickerUtil.openCamera(cameraLauncher, context)
                         }
                     )
@@ -165,6 +165,7 @@ fun PostItem(
     val isLiked = post.likes.any { it.userId == currentUserId }
     var isCommentsVisible by remember { mutableStateOf(false) }
     val comments by viewModel.getCommentsForPost(post.postId).collectAsState(initial = emptyList())
+    var isLessonDetailsVisible by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -173,7 +174,8 @@ fun PostItem(
     ) {
 
         Row(
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
         ) {
             Image(
                 painter = painterResource(id = R.drawable.profile),
@@ -182,22 +184,56 @@ fun PostItem(
                     .size(40.dp)
                     .clip(CircleShape)
             )
+
             Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = post.userName,
-                fontWeight = FontWeight.Bold,
-                style = typography.bodyLarge
-            )
 
-            Spacer(modifier = Modifier.weight(1f))
 
-            Icon(
-                painter = painterResource(id = R.drawable.detail),
-                contentDescription = "Details Icon",
-                modifier = Modifier.size(24.dp),
-                tint = Color.Unspecified
-            )
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = post.userName,
+                        fontWeight = FontWeight.Bold,
+                        style = typography.bodyLarge
+                    )
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    if (isLessonDetailsVisible) {
+                        post.lessons?.let { lesson ->
+                            Column {
+                                Text(
+                                    text = lesson.name,
+                                    style = typography.bodyLarge,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                if (lesson.subtopics.isNotEmpty()) {
+                                    Text(
+                                        text = lesson.subtopics.joinToString { it.name },
+                                        style = typography.bodyMedium
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            IconButton(onClick = { isLessonDetailsVisible = !isLessonDetailsVisible }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.detail),
+                    contentDescription = "Details Icon",
+                    modifier = Modifier.size(24.dp),
+                    tint = Color.Unspecified
+                )
+            }
         }
+
+
+
+
 
         Spacer(modifier = Modifier.height(8.dp))
 
