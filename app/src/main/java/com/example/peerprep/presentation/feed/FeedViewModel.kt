@@ -51,8 +51,12 @@ class FeedViewModel @Inject constructor(
     }
 
     fun setImagePath(uri: Uri?) {
-        _imagePath.value = uri
+        if (_imagePath.value != uri) {
+            _imagePath.value = null
+            _imagePath.value = uri
+        }
     }
+
 
     fun getCurrentUserId(): String? {
         return userRepository.getCurrentUserId()

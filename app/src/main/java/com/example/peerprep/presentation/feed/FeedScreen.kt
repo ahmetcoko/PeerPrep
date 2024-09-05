@@ -4,6 +4,7 @@ package com.example.peerprep.presentation.feed
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -29,11 +30,13 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Comment
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.LaunchedEffect
@@ -70,6 +73,7 @@ fun FeedScreen(viewModel: FeedViewModel = hiltViewModel()) {
     val currentUserName by viewModel.currentUserName.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
     val currentPhotoUri by viewModel.imagePath.collectAsState()
+    var photoUri by remember { mutableStateOf<Uri?>(null) }
 
     val context = LocalContext.current as Activity
 
@@ -88,13 +92,15 @@ fun FeedScreen(viewModel: FeedViewModel = hiltViewModel()) {
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
         if (success) {
-            currentPhotoUri?.let { uri ->
+            photoUri?.let { uri ->
                 viewModel.setImagePath(uri)
             }
         } else {
             Toast.makeText(context, "Image capture failed", Toast.LENGTH_SHORT).show()
         }
     }
+
+
 
     LaunchedEffect(Unit) {
         viewModel.loadPosts()
@@ -122,7 +128,11 @@ fun FeedScreen(viewModel: FeedViewModel = hiltViewModel()) {
                         galleryLauncher = galleryLauncher,
                         cameraLauncher = cameraLauncher,
                         currentPhotoUri = currentPhotoUri,
-                        activity = context
+                        activity = context,
+                        onOpenCamera = {
+                            // Prepare photoUri before opening camera
+                            photoUri = ImagePickerUtil.openCamera(cameraLauncher, context)
+                        }
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
@@ -146,7 +156,8 @@ fun PostItem(
     galleryLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>,
     cameraLauncher: ManagedActivityResultLauncher<Uri, Boolean>,
     currentPhotoUri: Uri?,
-    activity: Activity
+    activity: Activity,
+    onOpenCamera: () -> Unit
 ) {
     var isImageDialogVisible by remember { mutableStateOf(false) }
     var imageUrlForDialog by remember { mutableStateOf<String?>(null) }
@@ -309,7 +320,8 @@ fun PostItem(
                     cameraLauncher = cameraLauncher,
                     currentPhotoUri = currentPhotoUri,
                     viewModel = viewModel,
-                    activity = activity
+                    activity = activity,
+                    onOpenCamera = onOpenCamera
                 )
             }
         }
@@ -338,7 +350,8 @@ fun CommentInputField(
     cameraLauncher: ManagedActivityResultLauncher<Uri, Boolean>,
     currentPhotoUri: Uri?,
     viewModel: FeedViewModel,
-    activity: Activity
+    activity: Activity,
+    onOpenCamera: () -> Unit
 ) {
     var commentText by remember { mutableStateOf("") }
 
@@ -374,8 +387,7 @@ fun CommentInputField(
 
         IconButton(
             onClick = {
-                val uri = ImagePickerUtil.openCamera(cameraLauncher, activity)
-                viewModel.setImagePath(uri)
+                onOpenCamera()
             }
         ) {
             Icon(imageVector = Icons.Default.CameraAlt, contentDescription = "Capture Photo")
@@ -393,9 +405,9 @@ fun CommentInputField(
         }
     }
 
-    currentPhotoUri?.let {
+    currentPhotoUri?.let { uri ->
         Image(
-            painter = rememberAsyncImagePainter(it),
+            painter = rememberAsyncImagePainter(uri),
             contentDescription = "Selected Image",
             modifier = Modifier
                 .padding(8.dp)
@@ -405,7 +417,9 @@ fun CommentInputField(
                 .background(Color.Gray)
         )
     }
+
 }
+
 
 
 
