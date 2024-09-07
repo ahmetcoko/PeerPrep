@@ -8,6 +8,7 @@ import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.result.ActivityResult
+import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.peerprep.domain.model.Post
@@ -128,10 +129,10 @@ class FeedViewModel @Inject constructor(
     }
 
 
-    fun addCommentToPost(postId: String, commentText: String, imageUri: Uri?) {
+    fun addCommentToPost(postId: String, commentText: String, imageUri: Uri?, solved: Boolean) {
         viewModelScope.launch {
             val imageUrl = imageUri?.let { uploadImageToStorage(postId) }
-            val comment = Comment(userName = _currentUserName.value ?: "", commentText = commentText, imageUrl = imageUrl)
+            val comment = Comment(userName = _currentUserName.value ?: "", commentText = commentText, imageUrl = imageUrl, solved = solved)
             postRepository.addCommentToPost(postId, comment)
             _posts.value = _posts.value.map { post ->
                 if (post.postId == postId) {
@@ -143,4 +144,5 @@ class FeedViewModel @Inject constructor(
             _imagePath.value = null
         }
     }
+
 }
