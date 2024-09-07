@@ -87,6 +87,7 @@ import kotlinx.coroutines.delay
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.animation.core.*
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 
 
 @Composable
@@ -97,6 +98,7 @@ fun FeedScreen(viewModel: FeedViewModel = hiltViewModel()) {
     val isRefreshing by viewModel.isRefreshing.collectAsState()
     val currentPhotoUri by viewModel.imagePath.collectAsState()
     var photoUri by remember { mutableStateOf<Uri?>(null) }
+    var showConfetti by remember { mutableStateOf(false) }
 
     val context = LocalContext.current as Activity
 
@@ -123,41 +125,62 @@ fun FeedScreen(viewModel: FeedViewModel = hiltViewModel()) {
         }
     }
 
-
-
     LaunchedEffect(Unit) {
         viewModel.loadPosts()
     }
 
-    SwipeRefresh(
-        state = rememberSwipeRefreshState(isRefreshing),
-        onRefresh = {
-            viewModel.loadPosts()
-        }
-    ) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp)
+    Box(modifier = Modifier.fillMaxSize()) {
+        SwipeRefresh(
+            state = rememberSwipeRefreshState(isRefreshing),
+            onRefresh = {
+                viewModel.loadPosts()
+            }
         ) {
-            items(posts) { post: Post ->
-                if (currentUserId != null && currentUserName != null) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(8.dp)
+            ) {
+                items(posts) { post: Post ->
+                    if (currentUserId != null && currentUserName != null) {
 
-                    PostItem(
-                        post = post,
-                        viewModel = viewModel,
-                        currentUserId = currentUserId!!,
-                        currentUserName = currentUserName!!,
-                        galleryLauncher = galleryLauncher,
-                        cameraLauncher = cameraLauncher,
-                        currentPhotoUri = currentPhotoUri,
-                        activity = context,
-                        onOpenCamera = {
-                            photoUri = ImagePickerUtil.openCamera(cameraLauncher, context)
-                        }
-                    )
+                        PostItem(
+                            post = post,
+                            viewModel = viewModel,
+                            currentUserId = currentUserId!!,
+                            currentUserName = currentUserName!!,
+                            galleryLauncher = galleryLauncher,
+                            cameraLauncher = cameraLauncher,
+                            currentPhotoUri = currentPhotoUri,
+                            activity = context,
+                            onOpenCamera = {
+                                photoUri = ImagePickerUtil.openCamera(cameraLauncher, context)
+                            },
+                            onSolved = { solved ->
+                                if (solved) {
+                                    showConfetti = true
+                                }
+                            }
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
-                Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
+
+        if (showConfetti) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                SimpleCheckmarkAnimation()
+
+                LaunchedEffect(Unit) {
+                    delay(3000)
+                    showConfetti = false
+                }
             }
         }
     }
@@ -179,11 +202,11 @@ fun PostItem(
     cameraLauncher: ManagedActivityResultLauncher<Uri, Boolean>,
     currentPhotoUri: Uri?,
     activity: Activity,
-    onOpenCamera: () -> Unit
+    onOpenCamera: () -> Unit,
+    onSolved: (Boolean) -> Unit
 ) {
     var isImageDialogVisible by remember { mutableStateOf(false) }
     var imageUrlForDialog by remember { mutableStateOf<String?>(null) }
-    var showConfetti by remember { mutableStateOf(false) }
 
 
     var isCommentsVisible by remember { mutableStateOf(false) }
@@ -404,9 +427,7 @@ fun PostItem(
                         viewModel.addCommentToPost(post.postId, commentText, photoUri, solved)
 
 
-                        if (solved) {
-                            showConfetti = true
-                        }
+                        onSolved(solved)
                     },
                     galleryLauncher = galleryLauncher,
                     cameraLauncher = cameraLauncher,
@@ -419,14 +440,6 @@ fun PostItem(
         }
 
         Spacer(modifier = Modifier.height(8.dp))
-
-        if (showConfetti) {
-            SimpleCheckmarkAnimation()
-            LaunchedEffect(Unit) {
-                delay(3000)
-                showConfetti = false
-            }
-        }
     }
 
     imageUrlForDialog?.let { imageUrl ->
@@ -455,6 +468,7 @@ fun CommentInputField(
     var commentText by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
     var selectedAnswer by remember { mutableStateOf("") }
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -476,7 +490,7 @@ fun CommentInputField(
             )
         )
 
-        // Answer Selection Dropdown
+
         Box {
             IconButton(onClick = { expanded = true }) {
                 Icon(
@@ -516,9 +530,10 @@ fun CommentInputField(
         IconButton(
             onClick = {
                 if (commentText.isNotEmpty()) {
-                    // Pass the selected answer when submitting the comment
                     onCommentSubmitted(commentText, currentPhotoUri, selectedAnswer)
                     commentText = ""
+                    selectedAnswer = ""
+                    keyboardController?.hide()
                 }
             }
         ) {
