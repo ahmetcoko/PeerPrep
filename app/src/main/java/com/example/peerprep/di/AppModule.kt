@@ -23,16 +23,24 @@ import javax.inject.Singleton
 object AppModule {
 
     @Provides
+    @Singleton
     fun provideFirebaseFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
 
     @Provides
+    @Singleton
+    fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
+
+    @Provides
+    @Singleton
     fun provideFirebaseStorage(): FirebaseStorage = FirebaseStorage.getInstance()
 
     @Provides
+    @Singleton
     fun provideFirebaseUserRepository(firestore: FirebaseFirestore): FirebaseUserRepository =
         FirebaseUserRepository(firestore)
 
     @Provides
+    @Singleton
     fun provideSignUpUseCase(repository: FirebaseUserRepository): SignUpUseCase =
         SignUpUseCase(repository)
 

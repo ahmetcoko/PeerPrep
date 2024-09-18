@@ -25,7 +25,7 @@ import com.example.peerprep.presentation.uploadQuestion.UploadQuestionScreen
 @Composable
 fun MainScreen(
     isLoggedIn: Boolean,
-    navigationManager: NavigationManager,
+    navigationManager: NavigationManager
 ) {
     var selectedTab by remember { mutableStateOf(Screen.Feed) }
 
