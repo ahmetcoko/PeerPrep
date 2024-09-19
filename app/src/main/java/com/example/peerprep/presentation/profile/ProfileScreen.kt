@@ -29,11 +29,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.TextField
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.rememberImagePainter
 import androidx.hilt.navigation.compose.hiltViewModel
 
@@ -46,6 +60,11 @@ fun ProfileScreen(
     val userProfile = profileViewModel.userProfile
     val profilePictureUri = profileViewModel.profilePictureUri
 
+    val universities by profileViewModel.universities.observeAsState(emptyList())
+    val departments by profileViewModel.departments.observeAsState(emptyList())
+    val selectedUniversity by profileViewModel.selectedUniversity.observeAsState()
+    val selectedDepartment by profileViewModel.selectedDepartment.observeAsState()
+
     val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val uri = result.data?.data
@@ -55,10 +74,29 @@ fun ProfileScreen(
         }
     }
 
+    var universityExpanded by remember { mutableStateOf(false) }
+    var departmentExpanded by remember { mutableStateOf(false) }
+
+    val selectedUniversityName = selectedUniversity?.name ?: ""
+    val selectedDepartmentName = selectedDepartment?.name ?: ""
+
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Profile") },
+                title = {
+                    Row(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Profile",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 24.sp
+                        )
+                    }
+                },
                 actions = {
                     IconButton(onClick = { profileViewModel.signOut() }) {
                         Icon(Icons.Default.ExitToApp, contentDescription = "Sign Out")
@@ -72,52 +110,157 @@ fun ProfileScreen(
                     .fillMaxSize()
                     .padding(innerPadding)
                     .padding(16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.Start
             ) {
-                Box(
+                Row(
                     modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                        .background(Color.Gray)
-                        .clickable {
-                            galleryLauncher.launch(Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI))
-                        },
-                    contentAlignment = Alignment.Center
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    profilePictureUri?.let { uri ->
-                        Image(
-                            painter = rememberImagePainter(uri),
-                            contentDescription = "Profile Picture",
-                            modifier = Modifier
-                                .size(100.dp)
-                                .clip(CircleShape),
-                            contentScale = ContentScale.Crop
+
+                    Box(
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(CircleShape)
+                            .background(Color.Gray)
+                            .clickable {
+                                galleryLauncher.launch(Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI))
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        profilePictureUri?.let { uri ->
+                            Image(
+                                painter = rememberImagePainter(uri),
+                                contentDescription = "Profile Picture",
+                                modifier = Modifier
+                                    .size(100.dp)
+                                    .clip(CircleShape),
+                                contentScale = ContentScale.Crop
+                            )
+                        } ?: userProfile?.profilePictureUrl?.let { url ->
+                            Image(
+                                painter = rememberImagePainter(url),
+                                contentDescription = "Profile Picture",
+                                modifier = Modifier
+                                    .size(100.dp)
+                                    .clip(CircleShape),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Column {
+                        Text(
+                            text = buildAnnotatedString {
+                                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                    append("Name: ")
+                                }
+                                append(userProfile?.name ?: "")
+                            }
                         )
-                    } ?: userProfile?.profilePictureUrl?.let { url ->
-                        Image(
-                            painter = rememberImagePainter(url),
-                            contentDescription = "Profile Picture",
-                            modifier = Modifier
-                                .size(100.dp)
-                                .clip(CircleShape),
-                            contentScale = ContentScale.Crop
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = buildAnnotatedString {
+                                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                    append("Username: ")
+                                }
+                                append(userProfile?.username ?: "")
+                            }
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = buildAnnotatedString {
+                                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                    append("Email: ")
+                                }
+                                append(userProfile?.email ?: "")
+                            }
                         )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Text(text = "Name: ${userProfile?.name ?: ""}")
-                Text(text = "Username: ${userProfile?.username ?: ""}")
-                Text(text = "Email: ${userProfile?.email ?: ""}")
+                ExposedDropdownMenuBox(
+                    expanded = universityExpanded,
+                    onExpandedChange = { universityExpanded = !universityExpanded }
+                ) {
+                    TextField(
+                        value = selectedUniversityName,
+                        onValueChange = {},
+                        label = { Text("Select University") },
+                        readOnly = true,
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = universityExpanded)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = universityExpanded,
+                        onDismissRequest = { universityExpanded = false }
+                    ) {
+                        universities.forEach { university ->
+                            DropdownMenuItem(
+                                onClick = {
+                                    profileViewModel.selectUniversity(university)
+                                    universityExpanded = false
+                                }
+                            ){
+                                Text(university.name)
+                            }
+                        }
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                ExposedDropdownMenuBox(
+                    expanded = departmentExpanded,
+                    onExpandedChange = {
+                        if (departments.isNotEmpty()) {
+                            departmentExpanded = !departmentExpanded
+                        }
+                    }
+                ) {
+                    TextField(
+                        value = selectedDepartmentName,
+                        onValueChange = {},
+                        label = { Text("Select Department") },
+                        readOnly = true,
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = departmentExpanded)
+                        },
+                        enabled = departments.isNotEmpty(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = departmentExpanded,
+                        onDismissRequest = { departmentExpanded = false }
+                    ) {
+                        departments.forEach { department ->
+                            DropdownMenuItem(
+                                onClick = {
+                                    profileViewModel.selectDepartment(department)
+                                    departmentExpanded = false
+                                }
+                            ){
+                                Text(department.name)
+                            }
+                        }
+                    }
+                }
             }
         }
     )
 }
+
 
 
 

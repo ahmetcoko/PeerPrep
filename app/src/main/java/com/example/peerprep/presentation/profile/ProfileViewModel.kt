@@ -15,7 +15,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.peerprep.data.repository.FirebaseUserRepository
 import com.example.peerprep.data.repository.UserProfileRepository
+import com.example.peerprep.domain.model.Department
+import com.example.peerprep.domain.model.University
 import com.example.peerprep.domain.model.UserProfile
+import com.example.peerprep.domain.repository.UniversityRepository
 import com.example.peerprep.domain.usecase.GetUserProfileUseCase
 import com.example.peerprep.presentation.navigation.NavigationManager
 import com.example.peerprep.util.ImagePickerUtil
@@ -30,6 +33,7 @@ class ProfileViewModel @Inject constructor(
     private val navigationManager: NavigationManager,
     private val getUserProfileUseCase: GetUserProfileUseCase,
     private val userProfileRepository: UserProfileRepository,
+    private val universityRepository: UniversityRepository,
     application: Application
 ) : ViewModel() {
 
@@ -40,10 +44,39 @@ class ProfileViewModel @Inject constructor(
 
     var profilePictureUri by mutableStateOf<Uri?>(null)
 
+    private val _universities = MutableLiveData<List<University>>()
+    val universities: LiveData<List<University>> get() = _universities
+
+    private val _selectedUniversity = MutableLiveData<University?>()
+    val selectedUniversity: LiveData<University?> get() = _selectedUniversity
+
+    private val _departments = MutableLiveData<List<Department>>()
+    val departments: LiveData<List<Department>> get() = _departments
+
+    private val _selectedDepartment = MutableLiveData<Department?>()
+    val selectedDepartment: LiveData<Department?> get() = _selectedDepartment
+
     init {
         viewModelScope.launch {
             userProfile = getUserProfileUseCase.execute()
+            loadUniversities()
         }
+    }
+
+    private fun loadUniversities() {
+        viewModelScope.launch {
+            _universities.value = universityRepository.getUniversities()
+        }
+    }
+
+    fun selectUniversity(university: University) {
+        _selectedUniversity.value = university
+        _departments.value = university.departments
+        _selectedDepartment.value = null
+    }
+
+    fun selectDepartment(department: Department) {
+        _selectedDepartment.value = department
     }
 
     fun signOut() {
