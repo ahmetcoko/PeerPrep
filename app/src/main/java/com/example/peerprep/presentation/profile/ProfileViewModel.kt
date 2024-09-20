@@ -27,6 +27,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
@@ -62,13 +63,27 @@ class ProfileViewModel @Inject constructor(
     private val _isChoosingTarget = MutableLiveData(false)
     val isChoosingTarget: LiveData<Boolean> get() = _isChoosingTarget
 
+    private val _selectedDate = MutableLiveData<LocalDate>()
+    val selectedDate: LiveData<LocalDate> get() = _selectedDate
+
+    private val _dayPlan = MutableLiveData<String>()
+    val dayPlan: LiveData<String> get() = _dayPlan
+
+    private val _schedule = MutableLiveData<Map<String, String>>() // Date to Plan map
+    val schedule: LiveData<Map<String, String>> get() = _schedule
+
+
+
     init {
         viewModelScope.launch {
             userProfile = getUserProfileUseCase.execute()
             loadUniversities()
             loadTargetFromDatabase()
+            loadUserSchedule()
         }
     }
+
+
 
     private fun loadUniversities() {
         viewModelScope.launch {
@@ -113,6 +128,47 @@ class ProfileViewModel @Inject constructor(
             .addOnFailureListener {
                 Log.e("ProfileViewModel", "Failed to save target data")
             }
+    }
+
+    private fun loadUserSchedule() {
+        val userId = firebaseUserRepository.getCurrentUserId() ?: return
+
+        firestore.collection("Users").document(userId).get()
+            .addOnSuccessListener { document ->
+                document?.let {
+                    val scheduleData = it.get("schedule") as? Map<String, String> ?: emptyMap()
+                    _schedule.value = scheduleData
+                }
+            }
+    }
+
+
+    fun saveDayPlan(date: LocalDate, plan: String) {
+        val userId = firebaseUserRepository.getCurrentUserId() ?: return
+
+        val updatedSchedule = _schedule.value?.toMutableMap() ?: mutableMapOf()
+        updatedSchedule[date.toString()] = plan
+        _schedule.value = updatedSchedule
+
+
+        firestore.collection("Users").document(userId)
+            .update("schedule.${date.toString()}", plan)
+            .addOnSuccessListener {
+                Log.d("ProfileViewModel", "Day plan saved successfully.")
+            }
+            .addOnFailureListener {
+                Log.e("ProfileViewModel", "Failed to save day plan.")
+            }
+    }
+
+
+    fun selectDate(date: LocalDate) {
+        _selectedDate.value = date
+        _dayPlan.value = _schedule.value?.get(date.toString()) ?: ""
+    }
+
+    fun updateDayPlan(plan: String) {
+        _dayPlan.value = plan
     }
 
     fun selectUniversity(university: University) {
