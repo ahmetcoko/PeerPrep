@@ -31,8 +31,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.TextField
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -42,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -50,6 +56,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberImagePainter
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.peerprep.R
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,6 +71,7 @@ fun ProfileScreen(
     val departments by profileViewModel.departments.observeAsState(emptyList())
     val selectedUniversity by profileViewModel.selectedUniversity.observeAsState()
     val selectedDepartment by profileViewModel.selectedDepartment.observeAsState()
+    val isChoosingTarget by profileViewModel.isChoosingTarget.observeAsState(false)
 
     val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
@@ -79,7 +87,6 @@ fun ProfileScreen(
 
     val selectedUniversityName = selectedUniversity?.name ?: ""
     val selectedDepartmentName = selectedDepartment?.name ?: ""
-
 
     Scaffold(
         topBar = {
@@ -98,11 +105,33 @@ fun ProfileScreen(
                     }
                 },
                 actions = {
+                    if (!isChoosingTarget && selectedUniversity != null && selectedDepartment != null) {
+                        IconButton(onClick = { profileViewModel.toggleChoosingTarget() }) {
+                            Icon(Icons.Default.Edit, contentDescription = "Edit Target")
+                        }
+                    }
                     IconButton(onClick = { profileViewModel.signOut() }) {
                         Icon(Icons.Default.ExitToApp, contentDescription = "Sign Out")
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            if (isChoosingTarget && selectedUniversity != null && selectedDepartment != null) {
+                FloatingActionButton(
+                    onClick = {
+                        profileViewModel.saveTargetSelection()
+                        profileViewModel.toggleChoosingTarget()
+                    },
+                ) {
+                    androidx.compose.material.Icon(
+                        painter = painterResource(id = R.drawable.save),
+                        contentDescription = "Save Icon",
+                        modifier = Modifier.size(24.dp),
+                        tint = Color.Unspecified
+                    )
+                }
+            }
         },
         content = { innerPadding ->
             Column(
@@ -125,7 +154,12 @@ fun ProfileScreen(
                             .clip(CircleShape)
                             .background(Color.Gray)
                             .clickable {
-                                galleryLauncher.launch(Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI))
+                                galleryLauncher.launch(
+                                    Intent(
+                                        Intent.ACTION_PICK,
+                                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                                    )
+                                )
                             },
                         contentAlignment = Alignment.Center
                     ) {
@@ -184,74 +218,115 @@ fun ProfileScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                ExposedDropdownMenuBox(
-                    expanded = universityExpanded,
-                    onExpandedChange = { universityExpanded = !universityExpanded }
-                ) {
-                    TextField(
-                        value = selectedUniversityName,
-                        onValueChange = {},
-                        label = { Text("Select University") },
-                        readOnly = true,
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = universityExpanded)
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = universityExpanded,
-                        onDismissRequest = { universityExpanded = false }
+                if (!isChoosingTarget && selectedUniversity != null && selectedDepartment != null) {
+                    Column {
+                        Text(
+                            text = "$selectedUniversityName",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+                        Text(
+                            text = "$selectedDepartmentName",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            Text(
+                                text = "${selectedDepartment!!.field}",
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(vertical = 8.dp)
+                            )
+                            Text(
+                                text = "${selectedDepartment!!.rank}",
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(vertical = 8.dp)
+                            )
+                            Text(
+                                text = "${selectedDepartment!!.score}",
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(vertical = 8.dp)
+                            )
+                        }
+                    }
+                } else if (!isChoosingTarget) {
+                    Button(
+                        onClick = { profileViewModel.toggleChoosingTarget() },
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        universities.forEach { university ->
-                            DropdownMenuItem(
-                                onClick = {
-                                    profileViewModel.selectUniversity(university)
-                                    universityExpanded = false
-                                }
-                            ){
-                                Text(university.name)
+                        Text("CHOOSE TARGET")
+                    }
+                } else {
+                    ExposedDropdownMenuBox(
+                        expanded = universityExpanded,
+                        onExpandedChange = { universityExpanded = !universityExpanded }
+                    ) {
+                        TextField(
+                            value = selectedUniversityName,
+                            onValueChange = {},
+                            label = { Text("Select University") },
+                            readOnly = true,
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = universityExpanded)
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .menuAnchor()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = universityExpanded,
+                            onDismissRequest = { universityExpanded = false }
+                        ) {
+                            universities.forEach { university ->
+                                DropdownMenuItem(
+                                    onClick = {
+                                        profileViewModel.selectUniversity(university)
+                                        universityExpanded = false
+                                    }
+                                ){
+                                    Text(university.name)}
                             }
                         }
                     }
-                }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                ExposedDropdownMenuBox(
-                    expanded = departmentExpanded,
-                    onExpandedChange = {
-                        if (departments.isNotEmpty()) {
-                            departmentExpanded = !departmentExpanded
-                        }
-                    }
-                ) {
-                    TextField(
-                        value = selectedDepartmentName,
-                        onValueChange = {},
-                        label = { Text("Select Department") },
-                        readOnly = true,
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = departmentExpanded)
-                        },
-                        enabled = departments.isNotEmpty(),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor()
-                    )
-                    ExposedDropdownMenu(
+
+                    ExposedDropdownMenuBox(
                         expanded = departmentExpanded,
-                        onDismissRequest = { departmentExpanded = false }
+                        onExpandedChange = {
+                            if (departments.isNotEmpty()) {
+                                departmentExpanded = !departmentExpanded
+                            }
+                        }
                     ) {
-                        departments.forEach { department ->
-                            DropdownMenuItem(
-                                onClick = {
-                                    profileViewModel.selectDepartment(department)
-                                    departmentExpanded = false
-                                }
-                            ){
-                                Text(department.name)
+                        TextField(
+                            value = selectedDepartmentName,
+                            onValueChange = {},
+                            label = { Text("Select Department") },
+                            readOnly = true,
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = departmentExpanded)
+                            },
+                            enabled = departments.isNotEmpty(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .menuAnchor()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = departmentExpanded,
+                            onDismissRequest = { departmentExpanded = false }
+                        ) {
+                            departments.forEach { department ->
+                                DropdownMenuItem(
+                                    onClick = {
+                                        profileViewModel.selectDepartment(department)
+                                        departmentExpanded = false
+                                    }
+                                ){
+                                    Text(department.name)}
                             }
                         }
                     }
@@ -260,6 +335,13 @@ fun ProfileScreen(
         }
     )
 }
+
+
+
+
+
+
+
 
 
 

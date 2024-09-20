@@ -23,6 +23,8 @@ import com.example.peerprep.domain.usecase.GetUserProfileUseCase
 import com.example.peerprep.presentation.navigation.NavigationManager
 import com.example.peerprep.util.ImagePickerUtil
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -34,6 +36,7 @@ class ProfileViewModel @Inject constructor(
     private val getUserProfileUseCase: GetUserProfileUseCase,
     private val userProfileRepository: UserProfileRepository,
     private val universityRepository: UniversityRepository,
+    private val firestore: FirebaseFirestore,
     application: Application
 ) : ViewModel() {
 
@@ -56,10 +59,14 @@ class ProfileViewModel @Inject constructor(
     private val _selectedDepartment = MutableLiveData<Department?>()
     val selectedDepartment: LiveData<Department?> get() = _selectedDepartment
 
+    private val _isChoosingTarget = MutableLiveData(false)
+    val isChoosingTarget: LiveData<Boolean> get() = _isChoosingTarget
+
     init {
         viewModelScope.launch {
             userProfile = getUserProfileUseCase.execute()
             loadUniversities()
+            loadTargetFromDatabase()
         }
     }
 
@@ -67,6 +74,45 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             _universities.value = universityRepository.getUniversities()
         }
+    }
+
+    private fun loadTargetFromDatabase() {
+        val userId = firebaseUserRepository.getCurrentUserId() ?: return
+
+        firestore.collection("Users").document(userId).get()
+            .addOnSuccessListener { document ->
+                document?.let {
+                    val universityName = it.getString("targetUniversity") ?: ""
+                    val departmentName = it.getString("targetDepartment") ?: ""
+
+                    if (universityName.isNotEmpty() && departmentName.isNotEmpty()) {
+                        _selectedUniversity.value = _universities.value?.find { uni -> uni.name == universityName }
+                        _selectedDepartment.value = _selectedUniversity.value?.departments?.find { dept -> dept.name == departmentName }
+                        _isChoosingTarget.value = false
+                    } else {
+                        _isChoosingTarget.value = true
+                    }
+                }
+            }
+    }
+
+    fun saveTargetSelection() {
+        val userId = firebaseUserRepository.getCurrentUserId() ?: return
+        val selectedUni = _selectedUniversity.value ?: return
+        val selectedDept = _selectedDepartment.value ?: return
+
+        val targetData = hashMapOf(
+            "targetUniversity" to selectedUni.name,
+            "targetDepartment" to selectedDept.name
+        )
+
+        firestore.collection("Users").document(userId).set(targetData, SetOptions.merge())
+            .addOnSuccessListener {
+                _isChoosingTarget.value = false
+            }
+            .addOnFailureListener {
+                Log.e("ProfileViewModel", "Failed to save target data")
+            }
     }
 
     fun selectUniversity(university: University) {
@@ -79,6 +125,10 @@ class ProfileViewModel @Inject constructor(
         _selectedDepartment.value = department
     }
 
+    fun toggleChoosingTarget() {
+        _isChoosingTarget.value = !_isChoosingTarget.value!!
+    }
+
     fun signOut() {
         firebaseUserRepository.signOut {
             navigationManager.navigateToSignIn()
@@ -89,7 +139,6 @@ class ProfileViewModel @Inject constructor(
     private fun clearLoginState() {
         sharedPreferences.edit().remove("is_logged_in").apply()
     }
-
 
     fun uploadProfilePicture(uri: Uri) {
         profilePictureUri = uri
@@ -111,5 +160,6 @@ class ProfileViewModel @Inject constructor(
         }
     }
 }
+
 
 
