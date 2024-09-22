@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
+import android.util.Log
 
 @Singleton
 class FirebasePostRepository @Inject constructor(
@@ -58,5 +59,28 @@ class FirebasePostRepository @Inject constructor(
         val postRef = firestore.collection("QuestionPosts").document(postId)
         postRef.update("comments", FieldValue.arrayUnion(comment)).await()
     }
+
+    fun getLikedPostsByUser(userId: String): Flow<List<Post>> = flow {
+        try {
+            val querySnapshot = firestore.collection("QuestionPosts")
+                .get()
+                .await()
+            val likedPosts = querySnapshot.documents.mapNotNull { document ->
+                val post = document.toObject(Post::class.java)
+                post?.let {
+                    if (it.likes.any { like -> like.userId == userId }) {
+                        post
+                    } else {
+                        null
+                    }
+                }
+            }
+            emit(likedPosts)
+        } catch (e: Exception) {
+            emit(emptyList<Post>())
+        }
+    }
+
+
 }
 

@@ -8,6 +8,7 @@ import com.example.peerprep.data.repository.UniversityRepositoryImpl
 import com.example.peerprep.domain.repository.LessonRepository
 import com.example.peerprep.domain.repository.UniversityRepository
 import com.example.peerprep.domain.usecase.GetLessonsUseCase
+import com.example.peerprep.domain.usecase.GetLikedPostsUseCase
 import com.example.peerprep.domain.usecase.SignUpUseCase
 import com.example.peerprep.presentation.navigation.NavigationManager
 import com.google.firebase.auth.FirebaseAuth
@@ -76,6 +77,12 @@ object AppModule {
         @ApplicationContext context: Context
     ): UniversityRepository {
         return UniversityRepositoryImpl(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetLikedPostsUseCase(postRepository: FirebasePostRepository): GetLikedPostsUseCase {
+        return GetLikedPostsUseCase(postRepository)
     }
 }
 
