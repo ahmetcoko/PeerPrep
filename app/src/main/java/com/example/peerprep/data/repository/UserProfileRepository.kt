@@ -15,6 +15,7 @@ class UserProfileRepository @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val auth: FirebaseAuth
 ) {
+
     suspend fun getUserProfile(): UserProfile? {
         val userId = auth.currentUser?.uid ?: return null
         return try {

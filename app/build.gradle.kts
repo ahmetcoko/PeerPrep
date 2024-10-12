@@ -83,13 +83,13 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
     implementation("com.google.firebase:firebase-analytics")
 
-    // Optional - Integration with activities
+
     implementation("androidx.activity:activity-compose:1.9.0")
-    // Optional - Integration with ViewModels
+
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
-    // Optional - Integration with LiveData
+
     implementation("androidx.compose.runtime:runtime-livedata")
-    // Optional - Integration with RxJava
+
     implementation("androidx.compose.runtime:runtime-rxjava2")
 
     implementation ("androidx.compose.material:material-icons-extended:1.0.0-beta01")

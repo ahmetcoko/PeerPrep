@@ -47,6 +47,8 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -76,9 +78,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.peerprep.R
+import com.example.peerprep.data.datasource.StaticLessonDataSource
 import com.example.peerprep.domain.model.Post
 import com.example.peerprep.presentation.feed.FeedViewModel
 import com.example.peerprep.ui.theme.commentBackground
+import com.example.peerprep.ui.theme.turquoise
 import com.example.peerprep.util.ImagePickerUtil
 import com.example.peerprep.util.ImageViewerDialog
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -87,13 +91,20 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun ArchiveScreen(viewModel: ArchiveViewModel = hiltViewModel()) {
-    val posts by viewModel.likedPosts.collectAsState()
+    val posts by viewModel.filteredPosts.collectAsState()
+    val lessons = StaticLessonDataSource.getLessons()
+    val selectedLesson by viewModel.selectedLesson.collectAsState()
+    val selectedSubtopic by viewModel.selectedSubtopic.collectAsState()
+
     val currentUserId by viewModel.currentUserId.collectAsState()
     val currentUserName by viewModel.currentUserName.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
     val currentPhotoUri by viewModel.imagePath.collectAsState()
     var photoUri by remember { mutableStateOf<Uri?>(null) }
     var showConfetti by remember { mutableStateOf(false) }
+
+    var expandedLesson by remember { mutableStateOf(false) }
+    var expandedSubtopic by remember { mutableStateOf(false) }
 
     val context = LocalContext.current as Activity
 
@@ -124,60 +135,148 @@ fun ArchiveScreen(viewModel: ArchiveViewModel = hiltViewModel()) {
         viewModel.loadLikedPosts()
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        SwipeRefresh(
-            state = rememberSwipeRefreshState(isRefreshing),
-            onRefresh = {
-                viewModel.loadLikedPosts()
-            }
-        ) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(8.dp)
-            ) {
-                items(posts) { post: Post ->
-                    if (currentUserId != null && currentUserName != null) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
 
-                        PostItem(
-                            post = post,
-                            viewModel = viewModel,
-                            currentUserId = currentUserId!!,
-                            currentUserName = currentUserName!!,
-                            galleryLauncher = galleryLauncher,
-                            cameraLauncher = cameraLauncher,
-                            currentPhotoUri = currentPhotoUri,
-                            activity = context,
-                            onOpenCamera = {
-                                photoUri = ImagePickerUtil.openCamera(cameraLauncher, context)
-                            },
-                            onSolved = { solved ->
-                                if (solved) {
-                                    showConfetti = true
-                                }
-                            }
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+        ) {
+
+            Box {
+                IconButton(onClick = { expandedLesson = true }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.filter),
+                        contentDescription = "Filter Icon",
+                        modifier = Modifier.size(40.dp),
+                        tint = Color.Unspecified
+                    )
+                }
+
+
+                DropdownMenu(
+                    expanded = expandedLesson,
+                    onDismissRequest = { expandedLesson = false }
+                ) {
+                    lessons.forEach { lesson ->
+                        DropdownMenuItem(onClick = {
+                            viewModel.onLessonSelected(lesson)
+                            expandedLesson = false
+                        }) {
+                            Text(text = lesson.name)
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+
+            if (selectedLesson?.subtopics?.isNotEmpty() == true) {
+                Box {
+                    IconButton(onClick = { expandedSubtopic = true }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.filter),
+                            contentDescription = "Filter Icon",
+                            modifier = Modifier.size(40.dp),
+                            tint = Color.Unspecified
                         )
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
+
+
+                    DropdownMenu(
+                        expanded = expandedSubtopic,
+                        onDismissRequest = { expandedSubtopic = false }
+                    ) {
+                        selectedLesson?.subtopics?.forEach { subtopic ->
+                            DropdownMenuItem(onClick = {
+                                viewModel.onSubtopicSelected(subtopic)
+                                expandedSubtopic = false
+                            }) {
+                                Text(text = subtopic.name)
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+
+            if (selectedLesson != null || selectedSubtopic != null) {
+                IconButton(onClick = {
+                    viewModel.clearFilter()
+                }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.clear),
+                        contentDescription = "Clear Filter",
+                        modifier = Modifier.size(40.dp),
+                        tint = Color.Unspecified
+                    )
                 }
             }
         }
 
-        if (showConfetti) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f)),
-                contentAlignment = Alignment.Center
+
+        Box(modifier = Modifier.fillMaxSize()) {
+            SwipeRefresh(
+                state = rememberSwipeRefreshState(isRefreshing),
+                onRefresh = {
+                    viewModel.loadLikedPosts()
+                }
             ) {
-                SimpleCheckmarkAnimation()
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(8.dp)
+                ) {
+                    items(posts) { post: Post ->
+                        if (currentUserId != null && currentUserName != null) {
 
-                LaunchedEffect(Unit) {
-                    delay(3000)
-                    showConfetti = false
+                            PostItem(
+                                post = post,
+                                viewModel = viewModel,
+                                currentUserId = currentUserId!!,
+                                currentUserName = currentUserName!!,
+                                galleryLauncher = galleryLauncher,
+                                cameraLauncher = cameraLauncher,
+                                currentPhotoUri = currentPhotoUri,
+                                activity = context,
+                                onOpenCamera = {
+                                    photoUri = ImagePickerUtil.openCamera(cameraLauncher, context)
+                                },
+                                onSolved = { solved ->
+                                    if (solved) {
+                                        showConfetti = true
+                                    }
+                                }
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
                 }
             }
-        }
+
+            if (showConfetti) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.5f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    SimpleCheckmarkAnimation()
+
+                    LaunchedEffect(Unit) {
+                        delay(3000)
+                        showConfetti = false
+                    }
+                }
+            }
+        }//box kapanıyor
     }
 }
 

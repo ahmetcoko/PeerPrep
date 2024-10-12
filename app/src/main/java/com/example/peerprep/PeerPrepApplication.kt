@@ -5,5 +5,5 @@ import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
 class PeerPrepApplication : Application() {
-    //Hilt initialization
+
 }

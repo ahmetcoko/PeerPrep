@@ -8,8 +8,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.peerprep.data.repository.FirebasePostRepository
 import com.example.peerprep.data.repository.FirebaseUserRepository
 import com.example.peerprep.domain.model.Comment
+import com.example.peerprep.domain.model.Lesson
 import com.example.peerprep.domain.model.Like
 import com.example.peerprep.domain.model.Post
+import com.example.peerprep.domain.model.Subtopic
 import com.example.peerprep.domain.usecase.GetLikedPostsUseCase
 import com.example.peerprep.util.ShareUtil
 import com.google.firebase.auth.FirebaseAuth
@@ -44,10 +46,50 @@ class ArchiveViewModel @Inject constructor(
     private val _likedPosts = MutableStateFlow<List<Post>>(emptyList())
     val likedPosts: StateFlow<List<Post>> get() = _likedPosts
 
+    private val _filteredPosts = MutableStateFlow<List<Post>>(emptyList())
+    val filteredPosts: StateFlow<List<Post>> get() = _filteredPosts
+
+    private val _selectedLesson = MutableStateFlow<Lesson?>(null)
+    val selectedLesson: StateFlow<Lesson?> get() = _selectedLesson
+
+    private val _selectedSubtopic = MutableStateFlow<Subtopic?>(null)
+    val selectedSubtopic: StateFlow<Subtopic?> get() = _selectedSubtopic
+
 
     init {
         loadLikedPosts()
         loadCurrentUserDetails()
+    }
+
+    fun onLessonSelected(lesson: Lesson) {
+        _selectedLesson.value = lesson
+        _selectedSubtopic.value = null
+        filterPosts()
+    }
+
+
+    fun onSubtopicSelected(subtopic: Subtopic) {
+        _selectedSubtopic.value = subtopic
+        filterPosts()
+    }
+
+    fun clearFilter() {
+        _selectedLesson.value = null
+        _selectedSubtopic.value = null
+        filterPosts()
+    }
+
+
+    private fun filterPosts() {
+        val selectedLesson = _selectedLesson.value
+        val selectedSubtopic = _selectedSubtopic.value
+
+        _filteredPosts.value = _likedPosts.value.filter { post ->
+            val postLessonMatches = selectedLesson == null || post.lessons?.name == selectedLesson.name
+            val postSubtopicMatches = selectedSubtopic == null || post.lessons?.subtopics?.any { it.name == selectedSubtopic.name } == true
+
+            postLessonMatches && postSubtopicMatches
+        }
     }
 
     fun setImagePath(uri: Uri?) {
@@ -75,6 +117,7 @@ class ArchiveViewModel @Inject constructor(
                 getLikedPostsUseCase.execute(it).collect { posts ->
                     Log.d("ArchiveViewModel", "Liked posts loaded: ${posts.size}")
                     _likedPosts.value = posts
+                    filterPosts()
                 }
             }
         }
