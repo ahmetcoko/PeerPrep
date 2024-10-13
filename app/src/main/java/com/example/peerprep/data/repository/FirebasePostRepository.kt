@@ -8,18 +8,22 @@ import com.example.peerprep.domain.model.Post
 import com.example.peerprep.domain.model.Subtopic
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
-import android.util.Log
+import com.example.peerprep.data.local.dao.PostDao
+import com.example.peerprep.data.local.entities.CommentEntity
+import com.example.peerprep.data.local.entities.LessonEntity
+import com.example.peerprep.data.local.entities.LikeEntity
+import com.example.peerprep.data.local.entities.PostEntity
+import com.example.peerprep.data.local.entities.SubtopicEntity
 
 @Singleton
 class FirebasePostRepository @Inject constructor(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val postDao: PostDao
 ) {
 
     fun getPosts(): Flow<List<Post>> = flow {
@@ -44,6 +48,49 @@ class FirebasePostRepository @Inject constructor(
     }
 
 
+    suspend fun cachePostsToRoom(posts: List<PostEntity>) {
+        postDao.deleteAllPosts()
+        postDao.insertPosts(posts)
+    }
+
+
+    fun getPostsFromRoom(): Flow<List<PostEntity>> {
+        return postDao.getAllPosts()
+    }
+
+
+    suspend fun syncPosts() {
+        getPosts().collect { posts ->
+            val postEntities = posts.mapNotNull { post ->
+                post.lessons.subtopics.map {
+                    it?.let { it1 ->
+                        SubtopicEntity(
+                            it1.name,
+                            it?.description
+                        )
+                    }
+                }?.let { LessonEntity(post.lessons.name, it) }?.let {
+                    PostEntity(
+                        postId = post.postId,
+                        comment = post.comment,
+                        downloadUrl = post.downloadUrl,
+                        answer = post.answer,
+                        date = post.date,
+                        userName = post.userName,
+                        fullName = post.fullName,
+                        userEmail = post.userEmail,
+                        lessons = it,
+                        likes = post.likes.map { LikeEntity(it.userId, it.username) },
+                        comments = post.comments.map { CommentEntity(it.userName, it.commentText, it.imageUrl, it.solved) }
+                    )
+                }
+            }
+            cachePostsToRoom(postEntities)
+        }
+    }
+
+
+
 
     suspend fun likePost(postId: String, like: Like) {
         val postRef = firestore.collection("QuestionPosts").document(postId)
@@ -59,6 +106,7 @@ class FirebasePostRepository @Inject constructor(
         val postRef = firestore.collection("QuestionPosts").document(postId)
         postRef.update("comments", FieldValue.arrayUnion(comment)).await()
     }
+
 
     fun getLikedPostsByUser(userId: String): Flow<List<Post>> = flow {
         try {

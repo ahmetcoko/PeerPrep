@@ -193,11 +193,13 @@ fun ArchiveScreen(viewModel: ArchiveViewModel = hiltViewModel()) {
                         onDismissRequest = { expandedSubtopic = false }
                     ) {
                         selectedLesson?.subtopics?.forEach { subtopic ->
-                            DropdownMenuItem(onClick = {
-                                viewModel.onSubtopicSelected(subtopic)
-                                expandedSubtopic = false
-                            }) {
-                                Text(text = subtopic.name)
+                            subtopic?.let { nonNullSubtopic ->
+                                DropdownMenuItem(onClick = {
+                                    viewModel.onSubtopicSelected(nonNullSubtopic)
+                                    expandedSubtopic = false
+                                }) {
+                                    Text(text = nonNullSubtopic.name)
+                                }
                             }
                         }
                     }
@@ -276,7 +278,7 @@ fun ArchiveScreen(viewModel: ArchiveViewModel = hiltViewModel()) {
                     }
                 }
             }
-        }//box kapanıyor
+        }
     }
 }
 
@@ -349,7 +351,7 @@ fun PostItem(
                                 )
                                 if (lesson.subtopics.isNotEmpty()) {
                                     androidx.compose.material3.Text(
-                                        text = lesson.subtopics.joinToString { it.name },
+                                        text = lesson.subtopics.joinToString { it?.name ?: "" },
                                         style = MaterialTheme.typography.bodyMedium
                                     )
                                 }

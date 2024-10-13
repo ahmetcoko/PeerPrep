@@ -1,6 +1,9 @@
 package com.example.peerprep.di
 
 import android.content.Context
+import androidx.room.Room
+import com.example.peerprep.data.local.AppDatabase
+import com.example.peerprep.data.local.dao.PostDao
 import com.example.peerprep.data.repository.FirebasePostRepository
 import com.example.peerprep.data.repository.FirebaseUserRepository
 import com.example.peerprep.data.repository.LessonRepositoryImpl
@@ -67,8 +70,11 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideFirebasePostRepository(firestore: FirebaseFirestore): FirebasePostRepository {
-        return FirebasePostRepository(firestore)
+    fun provideFirebasePostRepository(
+        firestore: FirebaseFirestore,
+        postDao: PostDao
+    ): FirebasePostRepository {
+        return FirebasePostRepository(firestore, postDao)
     }
 
     @Provides
@@ -83,6 +89,21 @@ object AppModule {
     @Singleton
     fun provideGetLikedPostsUseCase(postRepository: FirebasePostRepository): GetLikedPostsUseCase {
         return GetLikedPostsUseCase(postRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
+        return Room.databaseBuilder(
+            context,
+            AppDatabase::class.java,
+            "app_database"
+        ).build()
+    }
+
+    @Provides
+    fun providePostDao(database: AppDatabase): PostDao {
+        return database.postDao()
     }
 }
 

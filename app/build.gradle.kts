@@ -110,8 +110,18 @@ dependencies {
 
     implementation ("com.google.accompanist:accompanist-swiperefresh:0.24.13-rc")
 
+    implementation ("androidx.room:room-runtime:2.6.0-alpha02")
 
+    kapt ("androidx.room:room-compiler:2.6.0-alpha02")
 
+    implementation ("androidx.room:room-ktx:2.6.0-alpha02")
+
+    implementation ("com.google.code.gson:gson:2.10.1")
+
+    implementation ("androidx.room:room-rxjava2:2.6.0-alpha02")
+
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
 
 
 }

@@ -88,6 +88,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.animation.core.*
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import com.example.peerprep.data.local.entities.PostEntity
+import com.example.peerprep.data.mappers.toPost
 
 
 @Composable
@@ -141,9 +143,9 @@ fun FeedScreen(viewModel: FeedViewModel = hiltViewModel()) {
                     .fillMaxSize()
                     .padding(8.dp)
             ) {
-                items(posts) { post: Post ->
+                items(posts) { postEntity: PostEntity ->
+                    val post = postEntity.toPost()
                     if (currentUserId != null && currentUserName != null) {
-
                         PostItem(
                             post = post,
                             viewModel = viewModel,
@@ -255,7 +257,7 @@ fun PostItem(
                                 )
                                 if (lesson.subtopics.isNotEmpty()) {
                                     Text(
-                                        text = lesson.subtopics.joinToString { it.name },
+                                        text = lesson.subtopics.joinToString { it?.name ?: "" },
                                         style = typography.bodyMedium
                                     )
                                 }

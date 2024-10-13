@@ -16,4 +16,5 @@ data class Post(
     val comments: List<Comment> = emptyList()
 ) {
     constructor() : this("", "", "", Date(), "", "", "", Lesson(), "" , emptyList<Like>(), emptyList<Comment>())
+
 }

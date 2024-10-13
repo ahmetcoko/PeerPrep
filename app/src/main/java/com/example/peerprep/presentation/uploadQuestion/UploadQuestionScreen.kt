@@ -155,11 +155,12 @@ fun UploadQuestionScreen(
 
         if (selectedLesson != null) {
             SubtopicDropdown(
-                subtopics = selectedLesson!!.subtopics,
+                subtopics = selectedLesson!!.subtopics.filterNotNull(),
                 selectedSubtopic = selectedSubtopic,
                 onSubtopicSelected = { viewModel.onSubtopicSelected(it) }
             )
         }
+
 
         Spacer(modifier = Modifier.weight(1f))
 

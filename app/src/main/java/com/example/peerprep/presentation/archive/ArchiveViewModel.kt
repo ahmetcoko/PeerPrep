@@ -5,6 +5,8 @@ import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.peerprep.data.mappers.toComment
+import com.example.peerprep.data.mappers.toEntity
 import com.example.peerprep.data.repository.FirebasePostRepository
 import com.example.peerprep.data.repository.FirebaseUserRepository
 import com.example.peerprep.domain.model.Comment
@@ -86,7 +88,7 @@ class ArchiveViewModel @Inject constructor(
 
         _filteredPosts.value = _likedPosts.value.filter { post ->
             val postLessonMatches = selectedLesson == null || post.lessons?.name == selectedLesson.name
-            val postSubtopicMatches = selectedSubtopic == null || post.lessons?.subtopics?.any { it.name == selectedSubtopic.name } == true
+            val postSubtopicMatches = selectedSubtopic == null || post.lessons?.subtopics?.any { it?.name ?: "" == selectedSubtopic.name } == true
 
             postLessonMatches && postSubtopicMatches
         }
@@ -186,17 +188,37 @@ class ArchiveViewModel @Inject constructor(
     fun addCommentToPost(postId: String, commentText: String, imageUri: Uri?, solved: Boolean) {
         viewModelScope.launch {
             val imageUrl = imageUri?.let { uploadImageToStorage(postId) }
-            val comment = Comment(userName = _currentUserName.value ?: "", commentText = commentText, imageUrl = imageUrl, solved = solved)
+            val comment = Comment(
+                userName = _currentUserName.value ?: "",
+                commentText = commentText,
+                imageUrl = imageUrl,
+                solved = solved
+            )
+
+
             postRepository.addCommentToPost(postId, comment)
+
+
+            val commentEntity = comment.toEntity()
+
+
+            val commentUI = commentEntity.toComment()
+
+
             _likedPosts.value = _likedPosts.value.map { post ->
                 if (post.postId == postId) {
-                    post.copy(comments = post.comments + comment)
+                    post.copy(comments = post.comments + commentUI)
                 } else {
                     post
                 }
             }
+
             _imagePath.value = null
         }
     }
+
+
+
+
 
 }

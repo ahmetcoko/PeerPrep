@@ -11,12 +11,18 @@ import androidx.activity.result.ActivityResult
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.peerprep.data.local.dao.PostDao
+import com.example.peerprep.data.local.entities.CommentEntity
+import com.example.peerprep.data.local.entities.PostEntity
+import com.example.peerprep.data.mappers.toComment
+import com.example.peerprep.data.mappers.toEntity
 import com.example.peerprep.domain.model.Post
 import com.example.peerprep.data.repository.FirebasePostRepository
 import com.example.peerprep.data.repository.FirebaseUserRepository
 import com.example.peerprep.domain.model.Comment
 import com.example.peerprep.domain.model.Lesson
 import com.example.peerprep.domain.model.Like
+import com.example.peerprep.domain.usecase.GetPostsUseCase
 import com.example.peerprep.util.ImagePickerUtil
 import com.example.peerprep.util.ShareUtil
 import com.google.firebase.storage.FirebaseStorage
@@ -31,11 +37,13 @@ import javax.inject.Inject
 class FeedViewModel @Inject constructor(
     private val postRepository: FirebasePostRepository,
     private val userRepository: FirebaseUserRepository,
+    private val getPostsUseCase: GetPostsUseCase,
+    private val postDao: PostDao,
     private val storage: FirebaseStorage
 ) : ViewModel() {
 
-    private val _posts = MutableStateFlow<List<Post>>(emptyList())
-    val posts: StateFlow<List<Post>> get() = _posts
+    private val _posts = MutableStateFlow<List<PostEntity>>(emptyList())
+    val posts: StateFlow<List<PostEntity>> get() = _posts
 
     private val _currentUserId = MutableStateFlow<String?>(null)
     val currentUserId: StateFlow<String?> get() = _currentUserId
@@ -75,8 +83,9 @@ class FeedViewModel @Inject constructor(
 
     fun loadPosts() {
         viewModelScope.launch {
-            postRepository.getPosts().collect { posts ->
-                val sortedPosts = posts.sortedByDescending { it.date }
+            getPostsUseCase.syncPosts()
+            postDao.getAllPosts().collect { postEntities ->
+                val sortedPosts = postEntities.sortedByDescending { it.date }
                 _posts.value = sortedPosts
             }
         }
@@ -101,7 +110,7 @@ class FeedViewModel @Inject constructor(
         }
     }
 
-    fun getCommentsForPost(postId: String): StateFlow<List<Comment>> {
+    fun getCommentsForPost(postId: String): MutableStateFlow<List<CommentEntity>> {
         val post = _posts.value.find { it.postId == postId }
         return MutableStateFlow(post?.comments ?: emptyList())
     }
@@ -132,17 +141,32 @@ class FeedViewModel @Inject constructor(
     fun addCommentToPost(postId: String, commentText: String, imageUri: Uri?, solved: Boolean) {
         viewModelScope.launch {
             val imageUrl = imageUri?.let { uploadImageToStorage(postId) }
-            val comment = Comment(userName = _currentUserName.value ?: "", commentText = commentText, imageUrl = imageUrl, solved = solved)
+
+            val comment = Comment(
+                userName = _currentUserName.value ?: "",
+                commentText = commentText,
+                imageUrl = imageUrl,
+                solved = solved
+            )
+
+
             postRepository.addCommentToPost(postId, comment)
-            _posts.value = _posts.value.map { post ->
-                if (post.postId == postId) {
-                    post.copy(comments = post.comments + comment)
+
+
+            val commentEntity = comment.toEntity()
+
+            _posts.value = _posts.value.map { postEntity ->
+                if (postEntity.postId == postId) {
+                    postEntity.copy(comments = postEntity.comments + commentEntity)
                 } else {
-                    post
+                    postEntity
                 }
             }
+
             _imagePath.value = null
         }
     }
+
+
 
 }

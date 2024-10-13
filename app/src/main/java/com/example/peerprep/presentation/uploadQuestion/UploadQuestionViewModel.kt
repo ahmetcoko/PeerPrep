@@ -4,7 +4,6 @@ import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
 import com.example.peerprep.data.repository.FirebaseUserRepository
 import com.example.peerprep.domain.model.Lesson
 import com.example.peerprep.domain.model.Post
@@ -131,7 +130,7 @@ class UploadQuestionViewModel @Inject constructor(
     }
 
     private suspend fun uploadImageToStorage(postId: String): String? {
-        val imageUri = _imagePath.value ?: return null  // Return null immediately if no image path
+        val imageUri = _imagePath.value ?: return null
         val storageRef = storage.reference.child("QuestionImages/$postId.jpg")
 
         return try {
